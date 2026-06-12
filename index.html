@@ -25,17 +25,17 @@
 
     <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-logo">
+        <a href="index.html" class="nav-logo">
             <i class="fas fa-route"></i>
             <span>Travel<span class="highlight">Buddy</span></span>
-        </div>
+        </a>
         <div class="nav-links" id="navLinks">
-            <a href="#home" class="nav-link active">Home</a>
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#how-it-works" class="nav-link">How It Works</a>
-            <a href="#destinations" class="nav-link">Destinations</a>
-            <a href="#testimonials" class="nav-link">Stories</a>
-            <a href="#founder" class="nav-link">Founder</a>
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="features.html" class="nav-link">Features</a>
+            <a href="how-it-works.html" class="nav-link">How It Works</a>
+            <a href="destinations.html" class="nav-link">Destinations</a>
+            <a href="stories.html" class="nav-link">Stories</a>
+            <a href="founder.html" class="nav-link">Founder</a>
         </div>
         <div class="nav-buttons">
             <a href="login.html" class="btn-login">Login</a>
@@ -50,17 +50,17 @@
 
     <!-- MOBILE MENU -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#home">Home</a>
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#destinations">Destinations</a>
-        <a href="#testimonials">Stories</a>
-        <a href="#founder">Founder</a>
-        <a href="login.html" class="btn-signup" style="margin-top: 20px; text-align:center;">Get Started</a>
+        <a href="index.html" class="mobile-link active">Home</a>
+        <a href="features.html" class="mobile-link">Features</a>
+        <a href="how-it-works.html" class="mobile-link">How It Works</a>
+        <a href="destinations.html" class="mobile-link">Destinations</a>
+        <a href="stories.html" class="mobile-link">Stories</a>
+        <a href="founder.html" class="mobile-link">Founder</a>
+        <a href="login.html" class="btn-signup" style="margin-top: 20px;">Get Started</a>
     </div>
 
-    <!-- HERO SECTION -->
-    <section class="hero" id="home">
+    <!-- HERO SECTION (FULL SCREEN) -->
+    <section class="hero">
         <div class="hero-bg">
             <div class="mountain mountain-1"></div>
             <div class="mountain mountain-2"></div>
@@ -68,7 +68,6 @@
             <div class="cloud cloud-1"><i class="fas fa-cloud"></i></div>
             <div class="cloud cloud-2"><i class="fas fa-cloud"></i></div>
             <div class="cloud cloud-3"><i class="fas fa-cloud"></i></div>
-            <div class="stars" id="stars"></div>
         </div>
         <div class="hero-content">
             <div class="hero-badge">
@@ -87,7 +86,7 @@
                 <a href="login.html#signup" class="btn-primary">
                     <i class="fas fa-rocket"></i> Start Your Journey
                 </a>
-                <a href="#how-it-works" class="btn-secondary">
+                <a href="how-it-works.html" class="btn-secondary">
                     <i class="fas fa-play-circle"></i> See How It Works
                 </a>
             </div>
@@ -105,315 +104,16 @@
                     <span class="stat-label">Colleges</span>
                 </div>
             </div>
-        </div>
-        <div class="scroll-indicator">
-            <div class="mouse">
-                <div class="wheel"></div>
-            </div>
-            <span>Scroll to Explore</span>
-        </div>
-    </section>
-
-    <!-- FEATURES SECTION -->
-    <section class="features" id="features">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-star"></i> Why Choose Us</span>
-            <h2 class="section-title">Everything You Need For <span class="gradient-text">Epic Trips</span></h2>
-            <p class="section-subtitle">Built by students, for students. We know what you need.</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card" data-aos="fade-up">
-                <div class="feature-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <h3>Invite Only</h3>
-                <p>No random strangers. Only invited & verified college students can join. 100% safe.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-delay="100">
-                <div class="feature-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3>Build Your Squad</h3>
-                <p>Find like-minded travellers from your college or nearby colleges.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-delay="200">
-                <div class="feature-icon">
-                    <i class="fas fa-map-marked-alt"></i>
-                </div>
-                <h3>Smart Trip Planning</h3>
-                <p>Plan everything - destination, budget, dates. All in one place.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-delay="300">
-                <div class="feature-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <h3>Split Expenses</h3>
-                <p>No more awkward money talks. Auto-split bills among your group.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-delay="400">
-                <div class="feature-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <h3>Group Chat</h3>
-                <p>Discuss plans, share ideas, vote on destinations - all within the app.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-delay="500">
-                <div class="feature-icon">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <h3>Safe For Everyone</h3>
-                <p>Verified profiles, report system & admin controls. Safe for all genders.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section class="how-it-works" id="how-it-works">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-cogs"></i> Simple Steps</span>
-            <h2 class="section-title">How <span class="gradient-text">TravelBuddy</span> Works</h2>
-            <p class="section-subtitle">From signup to your dream trip - just 4 simple steps</p>
-        </div>
-        <div class="steps-container">
-            <div class="step-line"></div>
-            <div class="step">
-                <div class="step-number">01</div>
-                <div class="step-content">
-                    <div class="step-icon"><i class="fas fa-envelope-open-text"></i></div>
-                    <h3>Get Invited</h3>
-                    <p>Receive an invite link from a friend or request access. We keep it exclusive & safe.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">02</div>
-                <div class="step-content">
-                    <div class="step-icon"><i class="fas fa-user-plus"></i></div>
-                    <h3>Create Profile</h3>
-                    <p>Set up your profile. Tell us your travel style, interests & budget range.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">03</div>
-                <div class="step-content">
-                    <div class="step-icon"><i class="fas fa-search-location"></i></div>
-                    <h3>Find or Create Trip</h3>
-                    <p>Browse existing trips or create your own. Invite your squad!</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">04</div>
-                <div class="step-content">
-                    <div class="step-icon"><i class="fas fa-plane-departure"></i></div>
-                    <h3>Pack & Go!</h3>
-                    <p>Everything planned? Time to make memories! 🎉</p>
+            <div class="hero-explore">
+                <p>Explore More 👇</p>
+                <div class="quick-nav">
+                    <a href="features.html"><i class="fas fa-star"></i> Features</a>
+                    <a href="destinations.html"><i class="fas fa-map-marked-alt"></i> Destinations</a>
+                    <a href="founder.html"><i class="fas fa-crown"></i> Founder</a>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- POPULAR DESTINATIONS -->
-    <section class="destinations" id="destinations">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-fire"></i> Trending</span>
-            <h2 class="section-title">Popular <span class="gradient-text">Destinations</span></h2>
-            <p class="section-subtitle">Most loved destinations by college travellers</p>
-        </div>
-        <div class="destinations-grid">
-            <div class="dest-card">
-                <div class="dest-image" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                    <div class="dest-overlay">
-                        <i class="fas fa-mountain fa-3x"></i>
-                    </div>
-                    <div class="dest-badge">🔥 Trending</div>
-                </div>
-                <div class="dest-info">
-                    <h3>Manali</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Himachal Pradesh</p>
-                    <div class="dest-meta">
-                        <span><i class="fas fa-users"></i> 24 trips</span>
-                        <span><i class="fas fa-rupee-sign"></i> 5k-8k</span>
-                    </div>
-                </div>
-            </div>
-            <div class="dest-card">
-                <div class="dest-image" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                    <div class="dest-overlay">
-                        <i class="fas fa-umbrella-beach fa-3x"></i>
-                    </div>
-                    <div class="dest-badge">⭐ Popular</div>
-                </div>
-                <div class="dest-info">
-                    <h3>Goa</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> West Coast</p>
-                    <div class="dest-meta">
-                        <span><i class="fas fa-users"></i> 42 trips</span>
-                        <span><i class="fas fa-rupee-sign"></i> 6k-12k</span>
-                    </div>
-                </div>
-            </div>
-            <div class="dest-card">
-                <div class="dest-image" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                    <div class="dest-overlay">
-                        <i class="fas fa-water fa-3x"></i>
-                    </div>
-                    <div class="dest-badge">🏔️ Adventure</div>
-                </div>
-                <div class="dest-info">
-                    <h3>Rishikesh</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Uttarakhand</p>
-                    <div class="dest-meta">
-                        <span><i class="fas fa-users"></i> 18 trips</span>
-                        <span><i class="fas fa-rupee-sign"></i> 4k-7k</span>
-                    </div>
-                </div>
-            </div>
-            <div class="dest-card">
-                <div class="dest-image" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
-                    <div class="dest-overlay">
-                        <i class="fas fa-gopuram fa-3x"></i>
-                    </div>
-                    <div class="dest-badge">🌊 Chill</div>
-                </div>
-                <div class="dest-info">
-                    <h3>Pondicherry</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Tamil Nadu</p>
-                    <div class="dest-meta">
-                        <span><i class="fas fa-users"></i> 15 trips</span>
-                        <span><i class="fas fa-rupee-sign"></i> 5k-9k</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- TESTIMONIALS -->
-    <section class="testimonials" id="testimonials">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-quote-left"></i> Real Stories</span>
-            <h2 class="section-title">What <span class="gradient-text">Students</span> Say</h2>
-            <p class="section-subtitle">Real experiences from real college travellers</p>
-        </div>
-        <div class="testimonials-slider">
-            <div class="testimonial-card">
-                <div class="stars-rating">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                </div>
-                <p class="testimonial-text">"I always wanted to go to Ladakh but had no one to go with. Found 4 amazing people here and we had the best trip of our lives!"</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">R</div>
-                    <div class="author-info">
-                        <h4>Rahul K.</h4>
-                        <span>Delhi University</span>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars-rating">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                </div>
-                <p class="testimonial-text">"As a girl, safety was my biggest concern. The verified system here made me feel so comfortable. Made friends for life! 💕"</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">P</div>
-                    <div class="author-info">
-                        <h4>Priya M.</h4>
-                        <span>Mumbai University</span>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars-rating">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                </div>
-                <p class="testimonial-text">"The expense splitter saved so many friendships lol 😂. No more 'bhai tu de de baad mein le lunga' situations!"</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">A</div>
-                    <div class="author-info">
-                        <h4>Arjun S.</h4>
-                        <span>VIT Vellore</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA SECTION -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Ready to Find Your <span class="gradient-text">Travel Squad?</span></h2>
-            <p>Join 500+ college students already planning their next adventure</p>
-            <a href="login.html#signup" class="btn-primary btn-large">
-                <i class="fas fa-rocket"></i> Join TravelBuddy Now
-            </a>
-        </div>
-        <div class="cta-bg-elements">
-            <i class="fas fa-plane"></i>
-            <i class="fas fa-globe-asia"></i>
-            <i class="fas fa-passport"></i>
-            <i class="fas fa-suitcase-rolling"></i>
-        </div>
-    </section>
-
-    <!-- FOUNDER SECTION -->
-    <section class="founder" id="founder">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-crown"></i> The Brain Behind</span>
-            <h2 class="section-title">Meet The <span class="gradient-text">Founder</span></h2>
-        </div>
-        <div class="founder-card">
-            <div class="founder-image">
-                <img src="founder.jpeg" alt="Khushi - Founder" id="founderImg" onerror="this.src='https://ui-avatars.com/api/?name=Khushi&size=300&background=6c63ff&color=fff&bold=true'">
-                <div class="founder-badge">
-                    <i class="fas fa-crown"></i> Founder
-                </div>
-            </div>
-            <div class="founder-info">
-                <h3 class="founder-name">Khushi</h3>
-                <span class="founder-role">Founder & Visionary</span>
-                <p class="founder-bio">
-                    "A passionate college student who believed that every student deserves
-                    an epic trip with the right people. Built TravelBuddy to connect
-                    like-minded travellers and make college memories unforgettable."
-                </p>
-                <div class="founder-socials">
-                    <a href="https://www.instagram.com/_khushi_.2203" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="mailto:khushiiii.2203@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <h3><i class="fas fa-route"></i> Travel<span class="highlight">Buddy</span></h3>
-                <p>Making college trips happen since 2024</p>
-            </div>
-            <div class="footer-links">
-                <h4>Quick Links</h4>
-                <a href="#features">Features</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#destinations">Destinations</a>
-                <a href="#founder">About Founder</a>
-            </div>
-            <div class="footer-links">
-                <h4>Legal</h4>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Safety Guidelines</a>
-                <a href="#">Report Issue</a>
-            </div>
-            <div class="footer-links">
-                <h4>Connect</h4>
-                <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
-                <a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a>
-                <a href="#"><i class="fas fa-envelope"></i> Email Us</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 TravelBuddy. Made with ❤️ for College Students</p>
-        </div>
-    </footer>
 
     <script src="scripts/landing.js"></script>
 </body>

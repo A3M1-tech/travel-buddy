@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destinations - TravelBuddy</title>
+    <link rel="stylesheet" href="styles/landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">
+            <i class="fas fa-route"></i>
+            <span>Travel<span class="highlight">Buddy</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="features.html" class="nav-link">Features</a>
+            <a href="how-it-works.html" class="nav-link">How It Works</a>
+            <a href="destinations.html" class="nav-link active">Destinations</a>
+            <a href="stories.html" class="nav-link">Stories</a>
+            <a href="founder.html" class="nav-link">Founder</a>
+        </div>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn-login">Login</a>
+            <a href="login.html#signup" class="btn-signup">Get Started <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="features.html" class="mobile-link">Features</a>
+        <a href="how-it-works.html" class="mobile-link">How It Works</a>
+        <a href="destinations.html" class="mobile-link active">Destinations</a>
+        <a href="stories.html" class="mobile-link">Stories</a>
+        <a href="founder.html" class="mobile-link">Founder</a>
+        <a href="login.html" class="btn-signup" style="margin-top: 20px;">Get Started</a>
+    </div>
+
+    <section class="page-section">
+        <div class="page-header">
+            <span class="section-tag"><i class="fas fa-fire"></i> Trending</span>
+            <h1 class="page-title">Popular <span class="gradient-text">Destinations</span></h1>
+            <p class="page-subtitle">Most loved destinations by college travellers</p>
+        </div>
+        <div class="destinations-grid">
+            <div class="dest-card">
+                <div class="dest-image" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="dest-overlay"><i class="fas fa-mountain fa-3x"></i></div>
+                    <div class="dest-badge">🔥 Trending</div>
+                </div>
+                <div class="dest-info">
+                    <h3>Manali</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Himachal Pradesh</p>
+                    <div class="dest-meta">
+                        <span><i class="fas fa-users"></i> 24 trips</span>
+                        <span><i class="fas fa-rupee-sign"></i> 5k-8k</span>
+                    </div>
+                </div>
+            </div>
+            <div class="dest-card">
+                <div class="dest-image" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                    <div class="dest-overlay"><i class="fas fa-umbrella-beach fa-3x"></i></div>
+                    <div class="dest-badge">⭐ Popular</div>
+                </div>
+                <div class="dest-info">
+                    <h3>Goa</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> West Coast</p>
+                    <div class="dest-meta">
+                        <span><i class="fas fa-users"></i> 42 trips</span>
+                        <span><i class="fas fa-rupee-sign"></i> 6k-12k</span>
+                    </div>
+                </div>
+            </div>
+            <div class="dest-card">
+                <div class="dest-image" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                    <div class="dest-overlay"><i class="fas fa-water fa-3x"></i></div>
+                    <div class="dest-badge">🏔️ Adventure</div>
+                </div>
+                <div class="dest-info">
+                    <h3>Rishikesh</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Uttarakhand</p>
+                    <div class="dest-meta">
+                        <span><i class="fas fa-users"></i> 18 trips</span>
+                        <span><i class="fas fa-rupee-sign"></i> 4k-7k</span>
+                    </div>
+                </div>
+            </div>
+            <div class="dest-card">
+                <div class="dest-image" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                    <div class="dest-overlay"><i class="fas fa-gopuram fa-3x"></i></div>
+                    <div class="dest-badge">🌊 Chill</div>
+                </div>
+                <div class="dest-info">
+                    <h3>Pondicherry</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Tamil Nadu</p>
+                    <div class="dest-meta">
+                        <span><i class="fas fa-users"></i> 15 trips</span>
+                        <span><i class="fas fa-rupee-sign"></i> 5k-9k</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-cta">
+            <a href="stories.html" class="btn-primary">
+                Next: Stories <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <script src="scripts/landing.js"></script>
+</body>
+</html>
