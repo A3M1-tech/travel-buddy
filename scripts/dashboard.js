@@ -40,11 +40,6 @@ onAuthStateChanged(auth, async (user) => {
 function updateUI() {
     if (!userData) return;
     
-    // Welcome name
-    const userNameElement = document.getElementById('userName');
-    if (userNameElement) {
-        userNameElement.textContent = userData.fullName || 'Traveller';
-    }
     
     // Top bar avatar
     const avatarCircle = document.querySelector('.avatar-circle');

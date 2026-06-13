@@ -7,9 +7,10 @@ import {
     db,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    sendEmailVerification,
+    signOut,
     doc,
     setDoc,
+    getDoc,
     serverTimestamp
 } from './firebase-config.js';
 
@@ -299,17 +300,19 @@ if (signupForm) {
                 tripsCreated: 0
             });
             
-            // Send verification email
-            await sendEmailVerification(user);
-            
-            btn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
-            btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
-            
-            alert(`🎉 Welcome ${fullName}!\n\n📧 Verification email sent to:\n${email}\n\n⚠️ IMPORTANT:\n1. Check your inbox\n2. Click the verification link\n3. Then login!\n\nCan't find email? Check SPAM folder!`);
-            
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 3000);
+            btn.innerHTML = '<i class="fas fa-check"></i> Request Sent!';
+btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
+
+alert(
+    `✅ Account Created Successfully!\n\n` +
+    `📨 Your verification request has been sent to admin.\n\n` +
+    `⏳ You'll get access once the admin approves your account.\n\n` +
+    `Please wait for admin approval to login.`
+);
+
+setTimeout(() => {
+    window.location.href = 'index.html';
+}, 3000);
             
         } catch (error) {
             console.error('Signup error:', error);
@@ -353,24 +356,30 @@ if (loginForm) {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // CHECK IF EMAIL IS VERIFIED
-            if (!user.emailVerified) {
-                btn.innerHTML = '<span>Login</span><i class="fas fa-arrow-right"></i>';
-                btn.disabled = false;
-                
-                const resend = confirm(
-                    '⚠️ Your email is NOT verified!\n\n' +
-                    'Please check your inbox (and spam) for verification link.\n\n' +
-                    'Click OK to resend verification email.'
-                );
-                
-                if (resend) {
-                    await sendEmailVerification(user);
-                    alert('✅ Verification email sent! Check your inbox.');
-                }
-                
-                return;
-            }
+            // CHECK IF USER IS APPROVED BY ADMIN
+const userDocSnap = await getDoc(doc(db, "users", user.uid));
+
+if (userDocSnap.exists()) {
+    const userData = userDocSnap.data();
+    
+    // Check if admin has verified
+    if (!userData.verified && userData.role !== "admin" && userData.role !== "super_admin") {
+        btn.innerHTML = '<span>Login</span><i class="fas fa-arrow-right"></i>';
+        btn.disabled = false;
+        btn.style.background = '';
+        
+        alert(
+            `⏳ Account Pending Approval\n\n` +
+            `Your account is waiting for admin approval.\n\n` +
+            `Please wait for the admin to verify your account.\n\n` +
+            `You'll be able to login once approved!`
+        );
+        
+        // Sign them out
+        await signOut(auth);
+        return;
+    }
+}
             
             btn.innerHTML = '<i class="fas fa-check"></i> Success!';
             btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
