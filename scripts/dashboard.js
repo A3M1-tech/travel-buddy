@@ -119,12 +119,52 @@ function updateUI() {
     if (editPhone) editPhone.value = userData.phone || '';
     if (editCollege) editCollege.value = userData.college || '';
 
-        // Show admin link if user is admin
-    if (userData.role === 'super_admin' || userData.role === 'admin') {
-        const adminLink = document.getElementById('adminPanelLink');
-        if (adminLink) {
-            adminLink.style.display = 'flex';
+       // Show admin features if user is admin
+if (userData.role === 'super_admin' || userData.role === 'admin') {
+    // Show admin in sidebar
+    const adminLink = document.getElementById('adminPanelLink');
+    if (adminLink) {
+        adminLink.style.display = 'flex';
+    }
+    
+    // Show admin in bottom nav (hide squad on mobile)
+    const bottomAdmin = document.getElementById('bottomAdmin');
+    const bottomSquad = document.getElementById('bottomSquad');
+    if (bottomAdmin) {
+        bottomAdmin.style.display = 'flex';
+    }
+    if (bottomSquad) {
+        bottomSquad.style.display = 'none';
+    }
+    
+    // Load pending count for badge
+    loadPendingCount();
+}
+}
+
+// ============================
+// LOAD PENDING USERS COUNT FOR BADGE
+// ============================
+async function loadPendingCount() {
+    try {
+        const { collection, getDocs } = await import('./firebase-config.js');
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        let pendingCount = 0;
+        
+        usersSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (!data.verified) pendingCount++;
+        });
+        
+        const badge = document.getElementById('bottomAdminBadge');
+        if (badge && pendingCount > 0) {
+            badge.textContent = pendingCount;
+            badge.style.display = 'flex';
+        } else if (badge) {
+            badge.style.display = 'none';
         }
+    } catch (error) {
+        console.error('Error loading pending count:', error);
     }
 }
 

@@ -1619,3 +1619,50 @@ body {
         flex-direction: column;
     }
 }
+
+/* ADMIN BOTTOM NAV */
+.admin-bottom {
+    position: relative;
+}
+
+.admin-bottom i {
+    color: #ffd700 !important;
+}
+
+.admin-bottom.active i {
+    color: var(--accent-1) !important;
+}
+
+.bottom-badge {
+    position: absolute;
+    top: 0;
+    right: 50%;
+    transform: translateX(15px);
+    background: var(--accent-2);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sidebar admin link styling */
+.nav-item.admin-link {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    margin-top: 10px;
+}
+
+.nav-item.admin-link i {
+    color: #ffd700;
+}
+
+.nav-item.admin-link:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+    border-color: #ffd700;
+}

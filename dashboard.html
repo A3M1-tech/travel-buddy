@@ -514,27 +514,37 @@
     </main>
 
     <!-- MOBILE BOTTOM NAV -->
-    <nav class="bottom-nav">
-        <a href="#" class="bottom-nav-item active" data-page="home">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-page="explore">
-            <i class="fas fa-compass"></i>
-            <span>Explore</span>
-        </a>
-        <a href="#" class="bottom-nav-item create-btn" data-page="create">
-            <i class="fas fa-plus"></i>
-        </a>
-        <a href="#" class="bottom-nav-item" data-page="squad">
-            <i class="fas fa-users"></i>
-            <span>Squad</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-page="profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-    </nav>
+<nav class="bottom-nav">
+    <a href="#" class="bottom-nav-item active" data-page="home">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="#" class="bottom-nav-item" data-page="explore">
+        <i class="fas fa-compass"></i>
+        <span>Explore</span>
+    </a>
+    <a href="#" class="bottom-nav-item create-btn" data-page="create">
+        <i class="fas fa-plus"></i>
+    </a>
+    
+    <!-- Squad (Default for users) -->
+    <a href="#" class="bottom-nav-item" data-page="squad" id="bottomSquad">
+        <i class="fas fa-users"></i>
+        <span>Squad</span>
+    </a>
+    
+    <!-- Admin Panel (Only for admins) -->
+    <a href="admin.html" class="bottom-nav-item admin-bottom" id="bottomAdmin" style="display:none;">
+        <i class="fas fa-crown"></i>
+        <span>Admin</span>
+        <span class="bottom-badge" id="bottomAdminBadge"></span>
+    </a>
+    
+    <a href="#" class="bottom-nav-item" data-page="profile">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+    </a>
+</nav>
 
     <script type="module" src="scripts/dashboard.js"></script>
 </body>
