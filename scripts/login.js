@@ -1,10 +1,22 @@
 // ============================
-// LOGIN / SIGNUP PAGE JS
+// LOGIN / SIGNUP PAGE WITH FIREBASE
 // ============================
+
+import { 
+    auth,
+    db,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    doc,
+    setDoc,
+    serverTimestamp
+} from './firebase-config.js';
 
 // PARTICLES
 function createParticles() {
     const container = document.getElementById('particles');
+    if (!container) return;
     for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -20,8 +32,8 @@ function createParticles() {
 }
 createParticles();
 
-// TOGGLE PASSWORD VISIBILITY
-function togglePassword(inputId, icon) {
+// TOGGLE PASSWORD
+window.togglePassword = function(inputId, icon) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
         input.type = 'text';
@@ -32,22 +44,19 @@ function togglePassword(inputId, icon) {
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     }
-}
+};
 
-// SWITCH BETWEEN LOGIN & SIGNUP
-function showSignup() {
+// SWITCH FORMS
+window.showSignup = function() {
     document.getElementById('loginCard').classList.add('hidden');
     document.getElementById('signupCard').classList.remove('hidden');
-    document.getElementById('signupCard').style.animation = 'fadeInUp 0.5s ease';
-}
+};
 
-function showLogin() {
+window.showLogin = function() {
     document.getElementById('signupCard').classList.add('hidden');
     document.getElementById('loginCard').classList.remove('hidden');
-    document.getElementById('loginCard').style.animation = 'fadeInUp 0.5s ease';
-}
+};
 
-// CHECK URL FOR SIGNUP REDIRECT
 if (window.location.hash === '#signup') {
     showSignup();
 }
@@ -83,38 +92,139 @@ if (signupPassword) {
     });
 }
 
-// LOGIN FORM SUBMIT
-document.getElementById('loginForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const btn = this.querySelector('.btn-submit');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-    btn.disabled = true;
+// ============================
+// REAL SIGNUP WITH FIREBASE
+// ============================
+const signupForm = document.getElementById('signupForm');
+if (signupForm) {
+    signupForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const btn = this.querySelector('.btn-submit');
+        const inputs = this.querySelectorAll('input');
+        
+        // Get form values
+        const fullName = inputs[0].value;
+        const email = inputs[1].value;
+        const college = inputs[2].value;
+        const phone = inputs[3].value;
+        const password = inputs[4].value;
+        const inviteCode = inputs[5].value;
+        
+        // Validate
+        if (password.length < 6) {
+            alert('Password must be at least 6 characters!');
+            return;
+        }
+        
+        // Loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        btn.disabled = true;
+        
+        try {
+            // Create user in Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Save user data to Firestore Database
+            await setDoc(doc(db, "users", user.uid), {
+                fullName: fullName,
+                email: email,
+                college: college,
+                phone: phone,
+                inviteCode: inviteCode,
+                role: "user",
+                verified: false,
+                createdAt: serverTimestamp(),
+                tripsJoined: 0,
+                tripsCreated: 0
+            });
+            
+            // Send email verification
+            await sendEmailVerification(user);
+            
+            // Success!
+            btn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
+            btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
+            
+            alert(`Welcome ${fullName}! 🎉\n\nA verification email has been sent to ${email}.\nPlease check your inbox!`);
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Signup error:', error);
+            
+            let errorMessage = 'Something went wrong!';
+            
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = 'This email is already registered!';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'Invalid email address!';
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = 'Password is too weak!';
+            }
+            
+            alert('❌ ' + errorMessage);
+            btn.innerHTML = '<span>Create Account</span><i class="fas fa-rocket"></i>';
+            btn.disabled = false;
+            btn.style.background = '';
+        }
+    });
+}
 
-    // Simulate login
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-check"></i> Success!';
-        btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1000);
-    }, 2000);
-});
+// ============================
+// REAL LOGIN WITH FIREBASE
+// ============================
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const btn = this.querySelector('.btn-submit');
+        const inputs = this.querySelectorAll('input');
+        
+        const email = inputs[0].value;
+        const password = inputs[1].value;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        btn.disabled = true;
+        
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            btn.innerHTML = '<i class="fas fa-check"></i> Success!';
+            btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
+            
+            console.log('Logged in as:', user.email);
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Login error:', error);
+            
+            let errorMessage = 'Login failed!';
+            
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = 'No account found with this email!';
+            } else if (error.code === 'auth/wrong-password') {
+                errorMessage = 'Wrong password!';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'Invalid email!';
+            } else if (error.code === 'auth/invalid-credential') {
+                errorMessage = 'Invalid email or password!';
+            }
+            
+            alert('❌ ' + errorMessage);
+            btn.innerHTML = '<span>Login</span><i class="fas fa-arrow-right"></i>';
+            btn.disabled = false;
+            btn.style.background = '';
+        }
+    });
+}
 
-// SIGNUP FORM SUBMIT
-document.getElementById('signupForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const btn = this.querySelector('.btn-submit');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-    btn.disabled = true;
-
-    // Simulate signup
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
-        btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1000);
-    }, 2000);
-});
-
-console.log('🔐 TravelBuddy Auth Page Loaded!');
+console.log('🔐 TravelBuddy Auth Loaded with Firebase!');
