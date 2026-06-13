@@ -456,3 +456,128 @@
         font-size: 1rem;
     }
 }
+
+/* TRIP CARDS IN ADMIN */
+.trips-list-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.trip-card-admin {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.trip-card-admin:hover {
+    border-color: var(--accent-1);
+    box-shadow: var(--glow-1);
+}
+
+.trip-card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 101, 132, 0.1));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.trip-card-header h3 {
+    font-size: 1.2rem;
+}
+
+.trip-status-badge {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.trip-status-badge.pending {
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.trip-status-badge.approved {
+    background: rgba(0, 204, 68, 0.1);
+    color: #00cc44;
+    border: 1px solid rgba(0, 204, 68, 0.3);
+}
+
+.trip-status-badge.rejected {
+    background: rgba(255, 68, 68, 0.1);
+    color: #ff4444;
+    border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.trip-card-body {
+    padding: 20px;
+}
+
+.trip-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.trip-detail-row i {
+    color: var(--accent-1);
+    width: 16px;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.trip-detail-row strong {
+    color: var(--text-primary);
+    margin-right: 5px;
+}
+
+.trip-types-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.trip-type-pill {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    color: var(--accent-1);
+    text-transform: capitalize;
+}
+
+.trip-card-actions {
+    padding: 15px 20px;
+    background: var(--bg-primary);
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.trip-card-actions button {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .trip-card-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .trip-card-actions {
+        flex-direction: column;
+    }
+}

@@ -182,59 +182,91 @@
 </div>
 
         <!-- CREATE TRIP PAGE -->
-        <div class="page" id="page-create">
-            <h1 class="page-title"><i class="fas fa-plus-circle"></i> Create New Trip</h1>
-            <div class="form-container">
-                <form class="create-trip-form" id="createTripForm">
-                    <div class="form-group">
-                        <label>Trip Name 🎯</label>
-                        <input type="text" placeholder="e.g., Goa Beach Vibes">
-                    </div>
-                    <div class="form-group">
-                        <label>Destination 📍</label>
-                        <input type="text" placeholder="e.g., Goa, Manali, Rishikesh">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Start Date 📅</label>
-                            <input type="date">
-                        </div>
-                        <div class="form-group">
-                            <label>End Date 📅</label>
-                            <input type="date">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Budget Per Person 💰</label>
-                        <input type="number" placeholder="e.g., 5000">
-                    </div>
-                    <div class="form-group">
-                        <label>Max Members 👥</label>
-                        <input type="number" placeholder="e.g., 10" min="2" max="20">
-                    </div>
-                    <div class="form-group">
-                        <label>Description ✍️</label>
-                        <textarea placeholder="Tell people what this trip is about..." rows="4"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Trip Type 🎒</label>
-                        <div class="trip-type-tags">
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🏔️ Mountains</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🏖️ Beach</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🏕️ Camping</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🏛️ Heritage</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🎉 Party</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🧘 Spiritual</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🎿 Adventure</span>
-                            <span class="type-tag" onclick="this.classList.toggle('selected')">🍕 Food Trip</span>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit-trip">
-                        <i class="fas fa-rocket"></i> Create Trip
-                    </button>
-                </form>
-            </div>
+<div class="page" id="page-create">
+    <h1 class="page-title"><i class="fas fa-plus-circle"></i> Create New Trip</h1>
+    
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            <strong>How it works:</strong>
+            <p>Your trip will be reviewed by admin for safety. Once approved, it'll be visible to all users to join!</p>
         </div>
+    </div>
+    
+    <div class="form-container">
+        <form class="create-trip-form" id="createTripForm">
+            <div class="form-group">
+                <label><i class="fas fa-flag"></i> Trip Name <span class="required">*</span></label>
+                <input type="text" id="tripName" placeholder="e.g., Goa Beach Vibes" required maxlength="50">
+                <small class="form-hint">Make it catchy! Max 50 characters</small>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> Destination <span class="required">*</span></label>
+                <input type="text" id="tripDestination" placeholder="e.g., Goa, Manali, Rishikesh" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Start Date <span class="required">*</span></label>
+                    <input type="date" id="tripStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-check"></i> End Date <span class="required">*</span></label>
+                    <input type="date" id="tripEndDate" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-rupee-sign"></i> Budget Per Person <span class="required">*</span></label>
+                    <input type="number" id="tripBudget" placeholder="e.g., 5000" required min="500">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Max Members <span class="required">*</span></label>
+                    <input type="number" id="tripMaxMembers" placeholder="e.g., 8" required min="2" max="20">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-pen"></i> Description <span class="required">*</span></label>
+                <textarea id="tripDescription" placeholder="Tell people what makes this trip special..." rows="4" required minlength="20"></textarea>
+                <small class="form-hint">Min 20 characters. Be descriptive!</small>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-tags"></i> Trip Type <span class="required">*</span></label>
+                <small class="form-hint">Select all that apply</small>
+                <div class="trip-type-tags">
+                    <span class="type-tag" data-type="mountains">🏔️ Mountains</span>
+                    <span class="type-tag" data-type="beach">🏖️ Beach</span>
+                    <span class="type-tag" data-type="camping">🏕️ Camping</span>
+                    <span class="type-tag" data-type="heritage">🏛️ Heritage</span>
+                    <span class="type-tag" data-type="party">🎉 Party</span>
+                    <span class="type-tag" data-type="spiritual">🧘 Spiritual</span>
+                    <span class="type-tag" data-type="adventure">🎿 Adventure</span>
+                    <span class="type-tag" data-type="food">🍕 Food Trip</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-shield-alt"></i> Trip Rules</label>
+                <textarea id="tripRules" placeholder="Any specific rules? (e.g., No alcohol, Vegetarian only, etc.)" rows="2"></textarea>
+                <small class="form-hint">Optional but recommended</small>
+            </div>
+            
+            <button type="submit" class="btn-submit-trip">
+                <i class="fas fa-paper-plane"></i> Submit for Approval
+            </button>
+            
+            <p class="form-disclaimer">
+                <i class="fas fa-info-circle"></i> 
+                Your trip will be reviewed within 24 hours. You'll be notified once approved!
+            </p>
+        </form>
+    </div>
+</div>
 
         <!-- INVITE FRIENDS PAGE -->
         <div class="page" id="page-invite">

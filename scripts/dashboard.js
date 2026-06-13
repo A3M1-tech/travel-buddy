@@ -9,7 +9,10 @@ import {
     signOut,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    collection,
+    addDoc,
+    serverTimestamp
 } from './firebase-config.js';
 
 let currentUser = null;
@@ -374,7 +377,195 @@ function setupLogout() {
         });
     }
 }
+// ============================
+// CREATE TRIP FUNCTIONALITY
+// ============================
 
+// Setup trip type tags
+document.addEventListener('DOMContentLoaded', () => {
+    setupTripTypeTags();
+    setupCreateTripForm();
+});
+
+function setupTripTypeTags() {
+    const tags = document.querySelectorAll('.type-tag');
+    tags.forEach(tag => {
+        tag.addEventListener('click', () => {
+            tag.classList.toggle('selected');
+        });
+    });
+}
+
+function setupCreateTripForm() {
+    const form = document.getElementById('createTripForm');
+    if (!form) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!userData) {
+            alert('❌ Please wait, loading user data...');
+            return;
+        }
+        
+        // Check if user is verified
+        if (!userData.verified) {
+            alert(
+                `⚠️ Account Not Verified\n\n` +
+                `You need to be verified to create trips.\n\n` +
+                `Please wait for admin approval first!`
+            );
+            return;
+        }
+        
+        // Get form values
+        const tripName = document.getElementById('tripName').value.trim();
+        const destination = document.getElementById('tripDestination').value.trim();
+        const startDate = document.getElementById('tripStartDate').value;
+        const endDate = document.getElementById('tripEndDate').value;
+        const budget = parseInt(document.getElementById('tripBudget').value);
+        const maxMembers = parseInt(document.getElementById('tripMaxMembers').value);
+        const description = document.getElementById('tripDescription').value.trim();
+        const rules = document.getElementById('tripRules').value.trim();
+        
+        // Get selected trip types
+        const selectedTypes = [];
+        document.querySelectorAll('.type-tag.selected').forEach(tag => {
+            selectedTypes.push(tag.dataset.type);
+        });
+        
+        // VALIDATIONS
+        if (tripName.length < 3) {
+            alert('❌ Trip name must be at least 3 characters!');
+            return;
+        }
+        
+        if (destination.length < 3) {
+            alert('❌ Please enter a valid destination!');
+            return;
+        }
+        
+        // Date validation
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (start < today) {
+            alert('❌ Start date cannot be in the past!');
+            return;
+        }
+        
+        if (end <= start) {
+            alert('❌ End date must be after start date!');
+            return;
+        }
+        
+        if (budget < 500) {
+            alert('❌ Budget should be at least ₹500!');
+            return;
+        }
+        
+        if (maxMembers < 2 || maxMembers > 20) {
+            alert('❌ Members should be between 2 and 20!');
+            return;
+        }
+        
+        if (description.length < 20) {
+            alert('❌ Description must be at least 20 characters!');
+            return;
+        }
+        
+        if (selectedTypes.length === 0) {
+            alert('❌ Please select at least one trip type!');
+            return;
+        }
+        
+        // All valid! Submit
+        const btn = form.querySelector('.btn-submit-trip');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        btn.disabled = true;
+        
+        try {
+            // Save trip to database
+            const tripData = {
+                name: tripName,
+                destination: destination,
+                startDate: startDate,
+                endDate: endDate,
+                budget: budget,
+                maxMembers: maxMembers,
+                description: description,
+                rules: rules || 'No specific rules',
+                types: selectedTypes,
+                
+                // Creator info
+                createdBy: currentUser.uid,
+                creatorName: userData.fullName,
+                creatorEmail: userData.email,
+                creatorCollege: userData.college,
+                
+                // Status
+                status: 'pending', // pending, approved, rejected
+                
+                // Members
+                members: [currentUser.uid], // Creator is auto-member
+                memberCount: 1,
+                joinRequests: [],
+                
+                // Timestamps
+                createdAt: serverTimestamp(),
+                
+                // Stats
+                views: 0,
+                likes: 0
+            };
+            
+            const docRef = await addDoc(collection(db, "trips"), tripData);
+            console.log('Trip created with ID:', docRef.id);
+            
+            // Update user's trips created count
+            await setDoc(doc(db, "users", currentUser.uid), {
+                ...userData,
+                tripsCreated: (userData.tripsCreated || 0) + 1
+            }, { merge: true });
+            
+            // Success!
+            btn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
+            btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
+            
+            alert(
+                `🎉 Trip Submitted Successfully!\n\n` +
+                `✅ Trip: ${tripName}\n` +
+                `📍 Destination: ${destination}\n\n` +
+                `⏳ Admin will review your trip within 24 hours.\n\n` +
+                `You'll see it in "My Trips" once approved!\n\n` +
+                `Thank you for using TravelBuddy! 🙏`
+            );
+            
+            // Reset form
+            form.reset();
+            document.querySelectorAll('.type-tag.selected').forEach(tag => {
+                tag.classList.remove('selected');
+            });
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Approval';
+                btn.disabled = false;
+                btn.style.background = '';
+                showPage('home');
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Error creating trip:', error);
+            alert('❌ Failed to submit trip. Try again!');
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Approval';
+            btn.disabled = false;
+        }
+    });
+}
+
+console.log('✈️ Trip Creation System Loaded!');
 // ============================
 // COPY INVITE LINK
 // ============================

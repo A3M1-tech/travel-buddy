@@ -10,8 +10,12 @@ import {
     doc,
     getDoc,
     setDoc,
+    deleteDoc,
     collection,
-    getDocs
+    getDocs,
+    query,
+    where,
+    orderBy
 } from './firebase-config.js';
 
 let currentAdmin = null;
@@ -37,6 +41,7 @@ onAuthStateChanged(auth, async (user) => {
                     
                     // Load data
                     loadAllUsers();
+                    loadAllTrips();
                 } else {
                     alert('❌ Access Denied! You are not an admin.');
                     window.location.href = 'dashboard.html';
@@ -95,6 +100,186 @@ async function loadAllUsers() {
         `;
     }
 }
+
+// ============================
+// LOAD ALL TRIPS
+// ============================
+let allTrips = [];
+
+async function loadAllTrips() {
+    try {
+        const tripsSnapshot = await getDocs(collection(db, "trips"));
+        allTrips = [];
+        
+        tripsSnapshot.forEach((doc) => {
+            allTrips.push({ id: doc.id, ...doc.data() });
+        });
+        
+        console.log('Loaded trips:', allTrips.length);
+        
+        updateTripStats();
+        displayPendingTrips();
+        
+    } catch (error) {
+        console.error('Error loading trips:', error);
+    }
+}
+
+function updateTripStats() {
+    const pending = allTrips.filter(t => t.status === 'pending').length;
+    const approved = allTrips.filter(t => t.status === 'approved').length;
+    const total = allTrips.length;
+    
+    const pendingEl = document.getElementById('totalPendingTrips');
+    const approvedEl = document.getElementById('totalApprovedTrips');
+    const totalEl = document.getElementById('totalTripsAdmin');
+    const badge = document.getElementById('pendingTripsBadge');
+    
+    if (pendingEl) pendingEl.textContent = pending;
+    if (approvedEl) approvedEl.textContent = approved;
+    if (totalEl) totalEl.textContent = total;
+    if (badge) {
+        badge.textContent = pending;
+        badge.style.display = pending > 0 ? 'inline-block' : 'none';
+    }
+}
+
+function displayPendingTrips() {
+    const container = document.getElementById('pendingTripsList');
+    if (!container) return;
+    
+    const pendingTrips = allTrips.filter(t => t.status === 'pending');
+    
+    if (pendingTrips.length === 0) {
+        container.innerHTML = `
+            <div class="empty-admin-state">
+                <i class="fas fa-check-circle"></i>
+                <h3>No Pending Trips! 🎉</h3>
+                <p>All caught up! New trips will appear here for review.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = pendingTrips.map(trip => createTripCard(trip)).join('');
+}
+
+function createTripCard(trip) {
+    const typesHTML = (trip.types || []).map(t => `<span class="trip-type-pill">${t}</span>`).join('');
+    
+    const startDate = new Date(trip.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const endDate = new Date(trip.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    
+    return `
+        <div class="trip-card-admin">
+            <div class="trip-card-header">
+                <h3>${trip.name}</h3>
+                <span class="trip-status-badge pending">⏳ Pending</span>
+            </div>
+            
+            <div class="trip-card-body">
+                <div class="trip-detail-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span><strong>Destination:</strong> ${trip.destination}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-calendar"></i>
+                    <span><strong>Dates:</strong> ${startDate} → ${endDate}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span><strong>Budget:</strong> ₹${trip.budget}/person</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-users"></i>
+                    <span><strong>Max Members:</strong> ${trip.maxMembers}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-user-circle"></i>
+                    <span><strong>Created by:</strong> ${trip.creatorName} (${trip.creatorCollege})</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-pen"></i>
+                    <span><strong>Description:</strong> ${trip.description}</span>
+                </div>
+                ${trip.rules && trip.rules !== 'No specific rules' ? `
+                <div class="trip-detail-row">
+                    <i class="fas fa-shield-alt"></i>
+                    <span><strong>Rules:</strong> ${trip.rules}</span>
+                </div>
+                ` : ''}
+                <div class="trip-types-display">
+                    ${typesHTML}
+                </div>
+            </div>
+            
+            <div class="trip-card-actions">
+                <button class="btn-approve" onclick="approveTrip('${trip.id}')">
+                    <i class="fas fa-check"></i> Approve Trip
+                </button>
+                <button class="btn-reject" onclick="rejectTrip('${trip.id}')">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================
+// APPROVE TRIP
+// ============================
+window.approveTrip = async function(tripId) {
+    if (!confirm('Approve this trip? It will be visible to all users.')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            status: 'approved',
+            approvedAt: new Date(),
+            approvedBy: currentAdmin.email
+        }, { merge: true });
+        
+        alert('✅ Trip approved! It\'s now visible to all users.');
+        loadAllTrips();
+        
+    } catch (error) {
+        console.error('Approval error:', error);
+        alert('❌ Failed to approve trip.');
+    }
+};
+
+// ============================
+// REJECT TRIP
+// ============================
+window.rejectTrip = async function(tripId) {
+    const reason = prompt('Why are you rejecting this trip? (Optional)');
+    if (reason === null) return; // User cancelled
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            status: 'rejected',
+            rejectedAt: new Date(),
+            rejectedBy: currentAdmin.email,
+            rejectionReason: reason || 'No reason provided'
+        }, { merge: true });
+        
+        alert('❌ Trip rejected.');
+        loadAllTrips();
+        
+    } catch (error) {
+        console.error('Rejection error:', error);
+        alert('Failed to reject trip.');
+    }
+};
 
 // ============================
 // UPDATE STATISTICS

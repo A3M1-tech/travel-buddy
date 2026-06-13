@@ -35,6 +35,11 @@
                 <i class="fas fa-chart-line"></i>
                 <span>Statistics</span>
             </a>
+            <a href="#" class="nav-item" data-page="trips">
+    <i class="fas fa-plane"></i>
+    <span>Pending Trips</span>
+    <span class="badge-count" id="pendingTripsBadge">0</span>
+</a>
             <a href="#" class="nav-item" data-page="settings">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
@@ -191,6 +196,45 @@
                 <p>These numbers update in real-time as users join and get verified. Currently TravelBuddy is in the launch phase. Keep growing the community!</p>
             </div>
         </div>
+
+        <!-- TRIPS PAGE -->
+<div class="page" id="page-trips">
+    <div class="page-header-admin">
+        <h1><i class="fas fa-plane"></i> Pending Trips</h1>
+        <p>Review and approve user-submitted trips</p>
+    </div>
+
+    <div class="quick-stats">
+        <div class="quick-stat">
+            <i class="fas fa-clock"></i>
+            <div>
+                <h3 id="totalPendingTrips">0</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="quick-stat">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <h3 id="totalApprovedTrips">0</h3>
+                <p>Approved</p>
+            </div>
+        </div>
+        <div class="quick-stat">
+            <i class="fas fa-plane"></i>
+            <div>
+                <h3 id="totalTripsAdmin">0</h3>
+                <p>Total Trips</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="trips-list-admin" id="pendingTripsList">
+        <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading trips...</p>
+        </div>
+    </div>
+</div>
 
         <!-- SETTINGS PAGE -->
         <div class="page" id="page-settings">
