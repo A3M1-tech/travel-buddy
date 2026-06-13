@@ -12,6 +12,7 @@ import {
     setDoc,
     collection,
     addDoc,
+    getDocs,
     serverTimestamp
 } from './firebase-config.js';
 
