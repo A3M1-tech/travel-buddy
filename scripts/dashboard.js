@@ -800,23 +800,25 @@ window.requestJoinTrip = async function(tripId) {
     }
 };
 
-// Load trips when explore page is shown
-const originalShowPage = window.showPage;
-window.showPage = function(pageName) {
-    originalShowPage(pageName);
-    
-    // Load trips when explore page opens
-    if (pageName === 'explore') {
-        loadApprovedTrips();
-    }
-};
+// Load trips when explore page is clicked (FIXED)
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit for everything to load
+    setTimeout(() => {
+        // Add click listeners to explore links
+        document.querySelectorAll('[data-page="explore"]').forEach(link => {
+            link.addEventListener('click', () => {
+                console.log('Explore clicked - loading trips...');
+                setTimeout(() => loadApprovedTrips(), 300);
+            });
+        });
+    }, 1500);
+});
 
-// Auto-load on first visit if on explore page
+// Auto-load trips immediately when page loads
 setTimeout(() => {
-    if (document.getElementById('page-explore')?.classList.contains('active')) {
-        loadApprovedTrips();
-    }
-}, 1500);
+    console.log('Auto-loading trips...');
+    loadApprovedTrips();
+}, 3000);
 
 console.log('🗺️ Explore Trips System Loaded!');
 
