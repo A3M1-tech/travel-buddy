@@ -1,5 +1,5 @@
 // ============================
-// DASHBOARD WITH FIREBASE
+// DASHBOARD WITH FIREBASE - FIXED
 // ============================
 
 import { 
@@ -15,7 +15,18 @@ import {
 let currentUser = null;
 let userData = null;
 
-// Check if user is logged in
+// ============================
+// WAIT FOR DOM TO LOAD
+// ============================
+document.addEventListener('DOMContentLoaded', () => {
+    setupNavigation();
+    setupLogout();
+    setupMenuToggle();
+});
+
+// ============================
+// CHECK LOGIN STATUS
+// ============================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -36,10 +47,11 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Update UI with user data
+// ============================
+// UPDATE UI WITH USER DATA
+// ============================
 function updateUI() {
     if (!userData) return;
-    
     
     // Top bar avatar
     const avatarCircle = document.querySelector('.avatar-circle');
@@ -55,7 +67,7 @@ function updateUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
         if (userData.profilePic) {
-            profileAvatar.innerHTML = `<img src="${userData.profilePic}" alt="Profile">`;
+            profileAvatar.innerHTML = `<img src="${userData.profilePic}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         } else {
             profileAvatar.textContent = (userData.fullName || 'U')[0].toUpperCase();
         }
@@ -71,13 +83,17 @@ function updateUI() {
     
     // Format joined date
     if (userData.createdAt) {
-        const date = userData.createdAt.toDate();
-        const formatted = date.toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-        setElement('viewJoined', formatted);
+        try {
+            const date = userData.createdAt.toDate();
+            const formatted = date.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            setElement('viewJoined', formatted);
+        } catch (e) {
+            setElement('viewJoined', '-');
+        }
     }
     
     // Verification badge
@@ -93,15 +109,115 @@ function updateUI() {
     }
     
     // Fill edit form
-    document.getElementById('editName').value = userData.fullName || '';
-    document.getElementById('editEmail').value = userData.email || '';
-    document.getElementById('editPhone').value = userData.phone || '';
-    document.getElementById('editCollege').value = userData.college || '';
+    const editName = document.getElementById('editName');
+    const editEmail = document.getElementById('editEmail');
+    const editPhone = document.getElementById('editPhone');
+    const editCollege = document.getElementById('editCollege');
+    
+    if (editName) editName.value = userData.fullName || '';
+    if (editEmail) editEmail.value = userData.email || '';
+    if (editPhone) editPhone.value = userData.phone || '';
+    if (editCollege) editCollege.value = userData.college || '';
 }
 
 function setElement(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text || '-';
+}
+
+// ============================
+// PAGE NAVIGATION (FIXED!)
+// ============================
+function showPage(pageName) {
+    console.log('Switching to page:', pageName);
+    
+    // Hide all pages
+    const allPages = document.querySelectorAll('.page');
+    allPages.forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show target page
+    const targetPage = document.getElementById(`page-${pageName}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        console.log('Page switched successfully');
+    } else {
+        console.error('Page not found:', `page-${pageName}`);
+    }
+    
+    // Update sidebar nav
+    const sidebarItems = document.querySelectorAll('.sidebar .nav-item');
+    sidebarItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.page === pageName) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Update bottom nav
+    const bottomItems = document.querySelectorAll('.bottom-nav-item');
+    bottomItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.page === pageName) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Close sidebar on mobile
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.remove('open');
+    }
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+// Make showPage globally accessible
+window.showPage = showPage;
+
+// ============================
+// SETUP NAVIGATION (FIXED!)
+// ============================
+function setupNavigation() {
+    // Sidebar nav clicks
+    const sidebarLinks = document.querySelectorAll('.sidebar .nav-item[data-page]');
+    sidebarLinks.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = item.dataset.page;
+            showPage(page);
+        });
+    });
+    
+    // Bottom nav clicks
+    const bottomLinks = document.querySelectorAll('.bottom-nav-item[data-page]');
+    bottomLinks.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = item.dataset.page;
+            showPage(page);
+        });
+    });
+    
+    console.log('Navigation setup complete');
+}
+
+// ============================
+// MOBILE MENU TOGGLE
+// ============================
+function setupMenuToggle() {
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        });
+    }
 }
 
 // ============================
@@ -112,12 +228,12 @@ window.toggleEditMode = function() {
     const editMode = document.getElementById('editMode');
     const editBtn = document.getElementById('editToggleBtn');
     
-    if (editMode.style.display === 'none') {
+    if (editMode.style.display === 'none' || editMode.style.display === '') {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
     } else {
-        cancelEdit();
+        window.cancelEdit();
     }
 };
 
@@ -147,7 +263,7 @@ window.saveProfile = async function() {
         userData.college = newCollege;
         
         updateUI();
-        cancelEdit();
+        window.cancelEdit();
         
         alert('✅ Profile updated successfully!');
     } catch (error) {
@@ -168,7 +284,6 @@ window.uploadProfilePic = async function(event) {
         return;
     }
     
-    // Convert to base64 (simple approach without Firebase Storage)
     const reader = new FileReader();
     reader.onload = async function(e) {
         const base64 = e.target.result;
@@ -192,85 +307,42 @@ window.uploadProfilePic = async function(event) {
 };
 
 // ============================
-// PAGE NAVIGATION
-// ============================
-window.showPage = function(pageName) {
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    const targetPage = document.getElementById(`page-${pageName}`);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    }
-    
-    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.page === pageName) {
-            item.classList.add('active');
-        }
-    });
-    
-    document.querySelectorAll('.bottom-nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.page === pageName) {
-            item.classList.add('active');
-        }
-    });
-    
-    document.getElementById('sidebar').classList.remove('open');
-};
-
-// SIDEBAR NAV CLICKS
-document.querySelectorAll('.sidebar .nav-item[data-page]').forEach(item => {
-    item.addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage(item.dataset.page);
-    });
-});
-
-// BOTTOM NAV CLICKS
-document.querySelectorAll('.bottom-nav-item[data-page]').forEach(item => {
-    item.addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage(item.dataset.page);
-    });
-});
-
-// MENU TOGGLE
-document.getElementById('menuToggle')?.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-});
-
 // LOGOUT
-const logoutBtn = document.querySelector('.nav-item.logout');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        
-        if (confirm('Are you sure you want to logout?')) {
-            try {
-                await signOut(auth);
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Logout error:', error);
+// ============================
+function setupLogout() {
+    const logoutBtn = document.querySelector('.nav-item.logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
             }
-        }
-    });
+        });
+    }
 }
 
+// ============================
 // COPY INVITE LINK
+// ============================
 window.copyInviteLink = function() {
     const input = document.getElementById('inviteLink');
     if (input) {
         input.select();
         document.execCommand('copy');
         const btn = document.getElementById('copyBtn');
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-        }, 2000);
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            }, 2000);
+        }
     }
 };
 
-console.log('📊 Dashboard with Firebase loaded!');
+console.log('📊 Dashboard with Firebase Loaded Successfully!');
