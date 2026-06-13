@@ -1,5 +1,5 @@
 // ============================
-// LOGIN / SIGNUP PAGE WITH FIREBASE
+// LOGIN/SIGNUP WITH FULL SECURITY
 // ============================
 
 import { 
@@ -46,7 +46,6 @@ window.togglePassword = function(inputId, icon) {
     }
 };
 
-// SWITCH FORMS
 window.showSignup = function() {
     document.getElementById('loginCard').classList.add('hidden');
     document.getElementById('signupCard').classList.remove('hidden');
@@ -61,7 +60,139 @@ if (window.location.hash === '#signup') {
     showSignup();
 }
 
-// PASSWORD STRENGTH CHECKER
+// ============================
+// VALIDATION FUNCTIONS
+// ============================
+
+// Validate Indian Phone Number
+function validatePhone(phone) {
+    // Remove spaces and dashes
+    phone = phone.replace(/[\s-]/g, '');
+    
+    // Check length
+    if (phone.length !== 10) {
+        return { valid: false, message: '❌ Phone must be exactly 10 digits!' };
+    }
+    
+    // Check if all digits
+    if (!/^\d+$/.test(phone)) {
+        return { valid: false, message: '❌ Phone must contain only numbers!' };
+    }
+    
+    // Check Indian number (starts with 6, 7, 8, or 9)
+    if (!/^[6-9]/.test(phone)) {
+        return { valid: false, message: '❌ Indian phone must start with 6, 7, 8, or 9!' };
+    }
+    
+    // Check for all same digits (like 9999999999)
+    if (/^(\d)\1+$/.test(phone)) {
+        return { valid: false, message: '❌ Invalid phone number!' };
+    }
+    
+    // Check for sequential (like 1234567890)
+    const sequential = ['1234567890', '0123456789', '9876543210'];
+    if (sequential.includes(phone)) {
+        return { valid: false, message: '❌ Please enter a real phone number!' };
+    }
+    
+    return { valid: true };
+}
+
+// Validate Email
+function validateEmail(email) {
+    email = email.toLowerCase().trim();
+    
+    // Basic format check
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+        return { valid: false, message: '❌ Invalid email format!' };
+    }
+    
+    // Block disposable/temp email domains
+    const blockedDomains = [
+        'tempmail.com', 'temp-mail.org', '10minutemail.com',
+        'guerrillamail.com', 'mailinator.com', 'throwaway.email',
+        'fake.com', 'test.com', 'example.com', 'abc.xyz',
+        'yopmail.com', 'maildrop.cc', 'getnada.com'
+    ];
+    
+    const domain = email.split('@')[1];
+    if (blockedDomains.includes(domain)) {
+        return { valid: false, message: '❌ Please use a real email (Gmail, Yahoo, Outlook etc.)!' };
+    }
+    
+    // Allow only common email providers (for extra security)
+    const allowedDomains = [
+        'gmail.com', 'yahoo.com', 'yahoo.in', 'outlook.com',
+        'hotmail.com', 'rediffmail.com', 'icloud.com',
+        'protonmail.com', 'live.com', 'edu.in'
+    ];
+    
+    // Allow educational domains (.edu, .ac.in)
+    const isEducational = domain.endsWith('.edu') || 
+                          domain.endsWith('.edu.in') || 
+                          domain.endsWith('.ac.in');
+    
+    if (!allowedDomains.includes(domain) && !isEducational) {
+        return { 
+            valid: false, 
+            message: '❌ Please use Gmail, Yahoo, Outlook or college email!' 
+        };
+    }
+    
+    return { valid: true };
+}
+
+// Validate Name
+function validateName(name) {
+    name = name.trim();
+    
+    if (name.length < 3) {
+        return { valid: false, message: '❌ Name must be at least 3 characters!' };
+    }
+    
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+        return { valid: false, message: '❌ Name should only contain letters!' };
+    }
+    
+    return { valid: true };
+}
+
+// Validate Password
+function validatePassword(password) {
+    if (password.length < 8) {
+        return { valid: false, message: '❌ Password must be at least 8 characters!' };
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+        return { valid: false, message: '❌ Password needs at least 1 uppercase letter!' };
+    }
+    
+    if (!/[0-9]/.test(password)) {
+        return { valid: false, message: '❌ Password needs at least 1 number!' };
+    }
+    
+    return { valid: true };
+}
+
+// ============================
+// REAL-TIME VALIDATION INDICATORS
+// ============================
+
+// Phone live validation
+const phoneInput = document.querySelector('#signupForm input[type="tel"]');
+if (phoneInput) {
+    phoneInput.addEventListener('input', function() {
+        // Allow only numbers
+        this.value = this.value.replace(/[^\d]/g, '');
+        // Max 10 digits
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+}
+
+// Password Strength
 const signupPassword = document.getElementById('signupPassword');
 if (signupPassword) {
     signupPassword.addEventListener('input', function () {
@@ -70,8 +201,8 @@ if (signupPassword) {
         const strengthText = document.querySelector('.strength-text');
 
         let strength = 0;
-        if (password.length >= 6) strength++;
-        if (password.length >= 10) strength++;
+        if (password.length >= 8) strength++;
+        if (password.length >= 12) strength++;
         if (/[A-Z]/.test(password)) strength++;
         if (/[0-9]/.test(password)) strength++;
         if (/[^A-Za-z0-9]/.test(password)) strength++;
@@ -93,7 +224,7 @@ if (signupPassword) {
 }
 
 // ============================
-// REAL SIGNUP WITH FIREBASE
+// SIGNUP WITH FULL VALIDATION
 // ============================
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
@@ -103,30 +234,57 @@ if (signupForm) {
         const btn = this.querySelector('.btn-submit');
         const inputs = this.querySelectorAll('input');
         
-        // Get form values
-        const fullName = inputs[0].value;
-        const email = inputs[1].value;
-        const college = inputs[2].value;
-        const phone = inputs[3].value;
+        const fullName = inputs[0].value.trim();
+        const email = inputs[1].value.trim().toLowerCase();
+        const college = inputs[2].value.trim();
+        const phone = inputs[3].value.trim();
         const password = inputs[4].value;
-        const inviteCode = inputs[5].value;
+        const inviteCode = inputs[5].value.trim();
         
-        // Validate
-        if (password.length < 6) {
-            alert('Password must be at least 6 characters!');
+        // VALIDATIONS
+        const nameCheck = validateName(fullName);
+        if (!nameCheck.valid) {
+            alert(nameCheck.message);
             return;
         }
         
-        // Loading state
+        const emailCheck = validateEmail(email);
+        if (!emailCheck.valid) {
+            alert(emailCheck.message);
+            return;
+        }
+        
+        if (college.length < 3) {
+            alert('❌ Please enter a valid college name!');
+            return;
+        }
+        
+        const phoneCheck = validatePhone(phone);
+        if (!phoneCheck.valid) {
+            alert(phoneCheck.message);
+            return;
+        }
+        
+        const passwordCheck = validatePassword(password);
+        if (!passwordCheck.valid) {
+            alert(passwordCheck.message);
+            return;
+        }
+        
+        if (!inviteCode || inviteCode.length < 4) {
+            alert('❌ Please enter a valid invite code!');
+            return;
+        }
+        
+        // All valid! Proceed with signup
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
         btn.disabled = true;
         
         try {
-            // Create user in Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // Save user data to Firestore Database
+            // Save to database
             await setDoc(doc(db, "users", user.uid), {
                 fullName: fullName,
                 email: email,
@@ -135,23 +293,23 @@ if (signupForm) {
                 inviteCode: inviteCode,
                 role: "user",
                 verified: false,
+                emailVerified: false,
                 createdAt: serverTimestamp(),
                 tripsJoined: 0,
                 tripsCreated: 0
             });
             
-            // Send email verification
+            // Send verification email
             await sendEmailVerification(user);
             
-            // Success!
             btn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
             btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
             
-            alert(`Welcome ${fullName}! 🎉\n\nA verification email has been sent to ${email}.\nPlease check your inbox!`);
+            alert(`🎉 Welcome ${fullName}!\n\n📧 Verification email sent to:\n${email}\n\n⚠️ IMPORTANT:\n1. Check your inbox\n2. Click the verification link\n3. Then login!\n\nCan't find email? Check SPAM folder!`);
             
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 2000);
+                window.location.href = 'login.html';
+            }, 3000);
             
         } catch (error) {
             console.error('Signup error:', error);
@@ -159,14 +317,14 @@ if (signupForm) {
             let errorMessage = 'Something went wrong!';
             
             if (error.code === 'auth/email-already-in-use') {
-                errorMessage = 'This email is already registered!';
+                errorMessage = '❌ This email is already registered!\nTry logging in instead.';
             } else if (error.code === 'auth/invalid-email') {
-                errorMessage = 'Invalid email address!';
+                errorMessage = '❌ Invalid email address!';
             } else if (error.code === 'auth/weak-password') {
-                errorMessage = 'Password is too weak!';
+                errorMessage = '❌ Password is too weak!';
             }
             
-            alert('❌ ' + errorMessage);
+            alert(errorMessage);
             btn.innerHTML = '<span>Create Account</span><i class="fas fa-rocket"></i>';
             btn.disabled = false;
             btn.style.background = '';
@@ -175,7 +333,7 @@ if (signupForm) {
 }
 
 // ============================
-// REAL LOGIN WITH FIREBASE
+// LOGIN WITH EMAIL VERIFICATION CHECK
 // ============================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -185,7 +343,7 @@ if (loginForm) {
         const btn = this.querySelector('.btn-submit');
         const inputs = this.querySelectorAll('input');
         
-        const email = inputs[0].value;
+        const email = inputs[0].value.trim().toLowerCase();
         const password = inputs[1].value;
         
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
@@ -195,10 +353,29 @@ if (loginForm) {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
+            // CHECK IF EMAIL IS VERIFIED
+            if (!user.emailVerified) {
+                btn.innerHTML = '<span>Login</span><i class="fas fa-arrow-right"></i>';
+                btn.disabled = false;
+                
+                const resend = confirm(
+                    '⚠️ Your email is NOT verified!\n\n' +
+                    'Please check your inbox (and spam) for verification link.\n\n' +
+                    'Click OK to resend verification email.'
+                );
+                
+                if (resend) {
+                    await sendEmailVerification(user);
+                    alert('✅ Verification email sent! Check your inbox.');
+                }
+                
+                return;
+            }
+            
             btn.innerHTML = '<i class="fas fa-check"></i> Success!';
             btn.style.background = 'linear-gradient(135deg, #00cc44, #00aa33)';
             
-            console.log('Logged in as:', user.email);
+            console.log('Logged in:', user.email);
             
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
@@ -210,16 +387,18 @@ if (loginForm) {
             let errorMessage = 'Login failed!';
             
             if (error.code === 'auth/user-not-found') {
-                errorMessage = 'No account found with this email!';
+                errorMessage = '❌ No account found with this email!';
             } else if (error.code === 'auth/wrong-password') {
-                errorMessage = 'Wrong password!';
+                errorMessage = '❌ Wrong password!';
             } else if (error.code === 'auth/invalid-email') {
-                errorMessage = 'Invalid email!';
+                errorMessage = '❌ Invalid email!';
             } else if (error.code === 'auth/invalid-credential') {
-                errorMessage = 'Invalid email or password!';
+                errorMessage = '❌ Invalid email or password!';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = '❌ Too many failed attempts! Try again later.';
             }
             
-            alert('❌ ' + errorMessage);
+            alert(errorMessage);
             btn.innerHTML = '<span>Login</span><i class="fas fa-arrow-right"></i>';
             btn.disabled = false;
             btn.style.background = '';
@@ -227,4 +406,4 @@ if (loginForm) {
     });
 }
 
-console.log('🔐 TravelBuddy Auth Loaded with Firebase!');
+console.log('🔐 Auth with Full Security loaded!');
