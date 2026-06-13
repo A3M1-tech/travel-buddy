@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TravelBuddy</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-route"></i>
+            <span>Travel<span class="highlight">Buddy</span></span>
+            <span class="admin-tag">ADMIN</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item active" data-page="pending">
+                <i class="fas fa-user-clock"></i>
+                <span>Pending Users</span>
+                <span class="badge-count" id="pendingBadge">0</span>
+            </a>
+            <a href="#" class="nav-item" data-page="all-users">
+                <i class="fas fa-users"></i>
+                <span>All Users</span>
+            </a>
+            <a href="#" class="nav-item" data-page="stats">
+                <i class="fas fa-chart-line"></i>
+                <span>Statistics</span>
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="index.html" class="nav-item logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="admin-header">
+                <h2>👑 Admin Control Panel</h2>
+                <p>Logged in as: <span id="adminName">Loading...</span></p>
+            </div>
+            <div class="top-bar-right">
+                <div class="admin-status">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+                <div class="user-avatar">
+                    <div class="avatar-circle admin-avatar">A</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PENDING USERS PAGE -->
+        <div class="page active" id="page-pending">
+            <div class="page-header-admin">
+                <h1><i class="fas fa-user-clock"></i> Pending Approvals</h1>
+                <p>Review and approve new user registrations</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h3 id="totalPending">0</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3 id="totalApproved">0</h3>
+                        <p>Approved Today</p>
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <h3 id="totalUsersStat">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Users List -->
+            <div class="users-list" id="pendingUsersList">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading pending users...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL USERS PAGE -->
+        <div class="page" id="page-all-users">
+            <div class="page-header-admin">
+                <h1><i class="fas fa-users"></i> All Users</h1>
+                <p>Manage all registered users</p>
+            </div>
+
+            <div class="filter-bar">
+                <input type="text" id="userSearch" placeholder="🔍 Search by name or email...">
+                <select id="filterRole">
+                    <option value="all">All Roles</option>
+                    <option value="user">Users</option>
+                    <option value="super_admin">Admins</option>
+                </select>
+                <select id="filterStatus">
+                    <option value="all">All Status</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                </select>
+            </div>
+
+            <div class="users-list" id="allUsersList">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading users...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATISTICS PAGE -->
+        <div class="page" id="page-stats">
+            <div class="page-header-admin">
+                <h1><i class="fas fa-chart-line"></i> Statistics</h1>
+                <p>Overview of TravelBuddy community</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card big-stat">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #6c63ff, #764ba2);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="bigStatUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+                <div class="stat-card big-stat">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #00cc44, #00aa33);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="bigStatVerified">0</h3>
+                        <p>Verified Users</p>
+                    </div>
+                </div>
+                <div class="stat-card big-stat">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="bigStatPending">0</h3>
+                        <p>Pending Approval</p>
+                    </div>
+                </div>
+                <div class="stat-card big-stat">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ff6584, #ff4444);">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="bigStatAdmins">0</h3>
+                        <p>Admins</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> About Statistics</h3>
+                <p>These numbers update in real-time as users join and get verified. Currently TravelBuddy is in the launch phase. Keep growing the community!</p>
+            </div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div class="page" id="page-settings">
+            <div class="page-header-admin">
+                <h1><i class="fas fa-cog"></i> Admin Settings</h1>
+                <p>Manage admin preferences</p>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-shield-alt"></i> Your Admin Info</h3>
+                <div class="detail-row">
+                    <span class="label">Name:</span>
+                    <span class="value" id="settingsName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Email:</span>
+                    <span class="value" id="settingsEmail">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Role:</span>
+                    <span class="value">
+                        <span class="role-badge admin-role">SUPER ADMIN 👑</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-users-cog"></i> Admin Team</h3>
+                <p>Current admins of TravelBuddy:</p>
+                <div id="adminTeamList" style="margin-top: 15px;">
+                    <p style="color: var(--text-secondary);">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="scripts/admin.js"></script>
+</body>
+</html>

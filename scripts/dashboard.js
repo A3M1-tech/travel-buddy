@@ -118,6 +118,14 @@ function updateUI() {
     if (editEmail) editEmail.value = userData.email || '';
     if (editPhone) editPhone.value = userData.phone || '';
     if (editCollege) editCollege.value = userData.college || '';
+
+        // Show admin link if user is admin
+    if (userData.role === 'super_admin' || userData.role === 'admin') {
+        const adminLink = document.getElementById('adminPanelLink');
+        if (adminLink) {
+            adminLink.style.display = 'flex';
+        }
+    }
 }
 
 function setElement(id, text) {
