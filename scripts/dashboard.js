@@ -565,6 +565,261 @@ function setupCreateTripForm() {
     });
 }
 
+// ============================
+// LOAD APPROVED TRIPS FOR EXPLORE
+// ============================
+
+let allApprovedTrips = [];
+
+async function loadApprovedTrips() {
+    const container = document.getElementById('exploreTripsContainer');
+    if (!container) return;
+    
+    try {
+        // Get all trips from database
+        const tripsSnapshot = await getDocs(collection(db, "trips"));
+        allApprovedTrips = [];
+        
+        tripsSnapshot.forEach((doc) => {
+            const trip = { id: doc.id, ...doc.data() };
+            // Only show approved trips
+            if (trip.status === 'approved') {
+                allApprovedTrips.push(trip);
+            }
+        });
+        
+        console.log('Approved trips loaded:', allApprovedTrips.length);
+        
+        displayExploreTrips(allApprovedTrips);
+        
+    } catch (error) {
+        console.error('Error loading trips:', error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2>Error Loading Trips</h2>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+function displayExploreTrips(trips) {
+    const container = document.getElementById('exploreTripsContainer');
+    if (!container) return;
+    
+    if (trips.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <h2>No Trips Yet! 🗺️</h2>
+                <p>Be the first to create an epic trip! Once trips are approved, they'll appear here.</p>
+                <div class="empty-actions">
+                    <button class="btn-empty-primary" onclick="showPage('create')">
+                        <i class="fas fa-plus-circle"></i> Create First Trip
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = trips.map(trip => createExploreCard(trip)).join('');
+}
+
+function createExploreCard(trip) {
+    const startDate = new Date(trip.startDate);
+    const endDate = new Date(trip.endDate);
+    
+    const startFormatted = startDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const endFormatted = endDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    
+    const spotsLeft = trip.maxMembers - (trip.memberCount || 1);
+    const isFull = spotsLeft <= 0;
+    const isUserMember = trip.members && trip.members.includes(currentUser?.uid);
+    const isUserCreator = trip.createdBy === currentUser?.uid;
+    
+    // Get first trip type for color
+    const firstType = trip.types?.[0] || 'adventure';
+    const gradients = {
+        mountains: 'linear-gradient(135deg, #667eea, #764ba2)',
+        beach: 'linear-gradient(135deg, #f093fb, #f5576c)',
+        camping: 'linear-gradient(135deg, #4facfe, #00f2fe)',
+        party: 'linear-gradient(135deg, #fa709a, #fee140)',
+        adventure: 'linear-gradient(135deg, #30cfd0, #330867)',
+        spiritual: 'linear-gradient(135deg, #a8edea, #fed6e3)',
+        heritage: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
+        food: 'linear-gradient(135deg, #ff9a9e, #fad0c4)'
+    };
+    
+    const icons = {
+        mountains: 'fa-mountain',
+        beach: 'fa-umbrella-beach',
+        camping: 'fa-campground',
+        party: 'fa-music',
+        adventure: 'fa-hiking',
+        spiritual: 'fa-pray',
+        heritage: 'fa-landmark',
+        food: 'fa-utensils'
+    };
+    
+    const typesHTML = (trip.types || []).slice(0, 3).map(t => `<span class="explore-type-tag">${t}</span>`).join('');
+    
+    let actionButton;
+    if (isUserCreator) {
+        actionButton = `<button class="btn-join" disabled style="background: #6c63ff;">
+            <i class="fas fa-crown"></i> Your Trip
+        </button>`;
+    } else if (isUserMember) {
+        actionButton = `<button class="btn-join" disabled style="background: #00cc44;">
+            <i class="fas fa-check"></i> Joined
+        </button>`;
+    } else if (isFull) {
+        actionButton = `<button class="btn-join" disabled style="background: #666;">
+            <i class="fas fa-lock"></i> Full
+        </button>`;
+    } else {
+        actionButton = `<button class="btn-join" onclick="requestJoinTrip('${trip.id}')">
+            <i class="fas fa-plus"></i> Request to Join
+        </button>`;
+    }
+    
+    return `
+        <div class="explore-card" data-types="${(trip.types || []).join(',')}">
+            <div class="explore-banner" style="background: ${gradients[firstType] || gradients.adventure};">
+                <div class="explore-banner-icon">
+                    <i class="fas ${icons[firstType] || 'fa-suitcase-rolling'}"></i>
+                </div>
+                <span class="spots-left ${isFull ? 'full' : ''}">
+                    ${isFull ? 'Full' : `${spotsLeft} spots left`}
+                </span>
+            </div>
+            <div class="explore-info">
+                <h3>${trip.name}</h3>
+                <p class="explore-location"><i class="fas fa-map-marker-alt"></i> ${trip.destination}</p>
+                <p class="explore-dates"><i class="fas fa-calendar"></i> ${startFormatted} - ${endFormatted}</p>
+                
+                <div class="explore-types">
+                    ${typesHTML}
+                </div>
+                
+                <p class="explore-description">${trip.description.substring(0, 80)}${trip.description.length > 80 ? '...' : ''}</p>
+                
+                <div class="explore-creator">
+                    <div class="creator-avatar">${(trip.creatorName || 'U')[0].toUpperCase()}</div>
+                    <span>By ${trip.creatorName}</span>
+                </div>
+                
+                <div class="explore-footer">
+                    <div class="explore-price-section">
+                        <span class="explore-price">₹${trip.budget}</span>
+                        <span class="explore-price-label">/person</span>
+                    </div>
+                    ${actionButton}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// FILTER FUNCTIONALITY
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        setupExploreFilters();
+    }, 1000);
+});
+
+function setupExploreFilters() {
+    const filterBtns = document.querySelectorAll('#exploreFilters .filter-btn');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const filter = btn.dataset.filter;
+            
+            if (filter === 'all') {
+                displayExploreTrips(allApprovedTrips);
+            } else {
+                const filtered = allApprovedTrips.filter(trip => 
+                    trip.types && trip.types.includes(filter)
+                );
+                displayExploreTrips(filtered);
+            }
+        });
+    });
+}
+
+// REQUEST TO JOIN TRIP
+window.requestJoinTrip = async function(tripId) {
+    if (!confirm('Send join request to trip creator?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        // Check if already requested
+        const existingRequests = tripData.joinRequests || [];
+        if (existingRequests.some(req => req.userId === currentUser.uid)) {
+            alert('⏳ You already requested to join this trip!');
+            return;
+        }
+        
+        // Add join request
+        const newRequest = {
+            userId: currentUser.uid,
+            userName: userData.fullName,
+            userEmail: userData.email,
+            userCollege: userData.college,
+            requestedAt: new Date().toISOString()
+        };
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            joinRequests: [...existingRequests, newRequest]
+        }, { merge: true });
+        
+        alert(
+            `✅ Join Request Sent!\n\n` +
+            `🎉 The trip creator will review your request.\n\n` +
+            `You'll be notified once approved!`
+        );
+        
+        loadApprovedTrips(); // Refresh
+        
+    } catch (error) {
+        console.error('Join request error:', error);
+        alert('❌ Failed to send request. Try again!');
+    }
+};
+
+// Load trips when explore page is shown
+const originalShowPage = window.showPage;
+window.showPage = function(pageName) {
+    originalShowPage(pageName);
+    
+    // Load trips when explore page opens
+    if (pageName === 'explore') {
+        loadApprovedTrips();
+    }
+};
+
+// Auto-load on first visit if on explore page
+setTimeout(() => {
+    if (document.getElementById('page-explore')?.classList.contains('active')) {
+        loadApprovedTrips();
+    }
+}, 1500);
+
+console.log('🗺️ Explore Trips System Loaded!');
+
 console.log('✈️ Trip Creation System Loaded!');
 // ============================
 // COPY INVITE LINK

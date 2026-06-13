@@ -1730,3 +1730,187 @@ body {
 .form-disclaimer i {
     color: var(--accent-1);
 }
+
+/* EXPLORE CARDS - ENHANCED */
+.explore-banner {
+    height: 140px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.explore-banner-icon {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 3rem;
+    transition: var(--transition);
+}
+
+.explore-card:hover .explore-banner-icon {
+    transform: scale(1.2);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.spots-left {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 5px 12px;
+    background: rgba(0, 204, 68, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    color: #00ff66;
+    font-weight: 600;
+    border: 1px solid rgba(0, 204, 68, 0.5);
+}
+
+.spots-left.full {
+    background: rgba(255, 68, 68, 0.3);
+    color: #ff6666;
+    border-color: rgba(255, 68, 68, 0.5);
+}
+
+.explore-info {
+    padding: 20px;
+}
+
+.explore-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.explore-location,
+.explore-dates {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.explore-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.explore-type-tag {
+    padding: 3px 10px;
+    background: rgba(108, 99, 255, 0.1);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 50px;
+    font-size: 0.7rem;
+    color: var(--accent-1);
+    text-transform: capitalize;
+}
+
+.explore-description {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 10px 0;
+    min-height: 38px;
+}
+
+.explore-creator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+}
+
+.creator-avatar {
+    width: 28px;
+    height: 28px;
+    background: var(--gradient-1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.explore-creator span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.explore-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.explore-price-section {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.explore-price {
+    font-weight: 700;
+    color: var(--accent-3);
+    font-size: 1.1rem;
+}
+
+.explore-price-label {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.btn-join {
+    padding: 8px 18px;
+    background: var(--gradient-1);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-join:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+}
+
+.btn-join:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Filter buttons enhancement */
+.explore-filters {
+    margin-bottom: 25px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.explore-filters::-webkit-scrollbar {
+    height: 4px;
+}
+
+.explore-filters::-webkit-scrollbar-thumb {
+    background: var(--accent-1);
+    border-radius: 10px;
+}
+
+/* Loading state */
+.explore-grid .loading-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+}
