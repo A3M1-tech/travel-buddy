@@ -76,112 +76,104 @@
         </header>
 
         <!-- HOME PAGE -->
-        <div class="page active" id="page-home">
-            <div class="welcome-section">
-                <div class="welcome-text">
-                    <h1>Welcome Back! 🌟</h1>
-                    <p>Ready for your next adventure?</p>
-                </div>
-                <button class="btn-create-trip" onclick="showPage('create')">
-                    <i class="fas fa-plus"></i> Create Trip
-                </button>
-            </div>
+<div class="page active" id="page-home">
+    <div class="welcome-section">
+        <div class="welcome-text">
+            <h1>Welcome, <span id="userName">Traveller</span>! 🌟</h1>
+            <p>Ready to start your first adventure?</p>
+        </div>
+        <button class="btn-create-trip" onclick="showPage('create')">
+            <i class="fas fa-plus"></i> Create Your First Trip
+        </button>
+    </div>
 
-            <!-- STATS CARDS -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #6c63ff, #764ba2);">
-                        <i class="fas fa-suitcase-rolling"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>3</h3>
-                        <p>Upcoming Trips</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #ff6584, #ff4444);">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>12</h3>
-                        <p>Travel Buddies</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #4ecdc4, #44aa99);">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>5</h3>
-                        <p>Places Visited</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
-                        <i class="fas fa-rupee-sign"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>₹2.4K</h3>
-                        <p>Saved with Splits</p>
-                    </div>
-                </div>
+    <!-- STATS CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6c63ff, #764ba2);">
+                <i class="fas fa-suitcase-rolling"></i>
             </div>
+            <div class="stat-info">
+                <h3 id="statTrips">0</h3>
+                <p>Upcoming Trips</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ff6584, #ff4444);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="statBuddies">0</h3>
+                <p>Travel Buddies</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4ecdc4, #44aa99);">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="statPlaces">0</h3>
+                <p>Places Visited</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="statSaved">₹0</h3>
+                <p>Saved with Splits</p>
+            </div>
+        </div>
+    </div>
 
-            <!-- UPCOMING TRIPS -->
-            <div class="section-block">
-                <div class="section-block-header">
-                    <h2><i class="fas fa-calendar-alt"></i> Upcoming Trips</h2>
-                    <a href="#" onclick="showPage('explore')">View All →</a>
+    <!-- EXAMPLE TRIP (Template/Demo) -->
+    <div class="section-block">
+        <div class="section-block-header">
+            <h2><i class="fas fa-lightbulb"></i> Example Trip</h2>
+            <span class="demo-badge">DEMO</span>
+        </div>
+        <div class="trips-grid">
+            <div class="trip-card demo-card">
+                <div class="trip-banner" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="trip-date">
+                        <span class="day">15</span>
+                        <span class="month">Dec</span>
+                    </div>
+                    <div class="trip-status">Example ✨</div>
                 </div>
-                <div class="trips-grid">
-                    <div class="trip-card">
-                        <div class="trip-banner" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                            <div class="trip-date">
-                                <span class="day">15</span>
-                                <span class="month">Dec</span>
-                            </div>
-                            <div class="trip-status">Confirmed ✅</div>
-                        </div>
-                        <div class="trip-details">
-                            <h3>Manali Adventure 🏔️</h3>
-                            <p class="trip-location"><i class="fas fa-map-marker-alt"></i> Himachal Pradesh</p>
-                            <div class="trip-meta">
-                                <span><i class="fas fa-users"></i> 6 members</span>
-                                <span><i class="fas fa-rupee-sign"></i> 7,500/person</span>
-                            </div>
-                            <div class="trip-members-avatars">
-                                <div class="mini-avatar" style="background: #6c63ff;">R</div>
-                                <div class="mini-avatar" style="background: #ff6584;">P</div>
-                                <div class="mini-avatar" style="background: #4ecdc4;">A</div>
-                                <div class="mini-avatar" style="background: #ffd700;">+3</div>
-                            </div>
-                        </div>
+                <div class="trip-details">
+                    <h3>Manali Adventure 🏔️</h3>
+                    <p class="trip-location"><i class="fas fa-map-marker-alt"></i> Himachal Pradesh</p>
+                    <div class="trip-meta">
+                        <span><i class="fas fa-users"></i> 6 members</span>
+                        <span><i class="fas fa-rupee-sign"></i> 7,500/person</span>
                     </div>
-                    <div class="trip-card">
-                        <div class="trip-banner" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                            <div class="trip-date">
-                                <span class="day">28</span>
-                                <span class="month">Jan</span>
-                            </div>
-                            <div class="trip-status">Planning 📋</div>
-                        </div>
-                        <div class="trip-details">
-                            <h3>Goa Beach Vibes 🏖️</h3>
-                            <p class="trip-location"><i class="fas fa-map-marker-alt"></i> Goa</p>
-                            <div class="trip-meta">
-                                <span><i class="fas fa-users"></i> 8 members</span>
-                                <span><i class="fas fa-rupee-sign"></i> 10,000/person</span>
-                            </div>
-                            <div class="trip-members-avatars">
-                                <div class="mini-avatar" style="background: #ff6584;">S</div>
-                                <div class="mini-avatar" style="background: #6c63ff;">K</div>
-                                <div class="mini-avatar" style="background: #ffd700;">+6</div>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="demo-note">
+                        💡 This is how your trips will look. Click "Create Trip" to make a real one!
+                    </p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-plane-departure"></i>
+        </div>
+        <h2>Your Adventure Awaits! ✈️</h2>
+        <p>You haven't joined any trips yet. Create your first one or explore trips made by other travellers!</p>
+        <div class="empty-actions">
+            <button class="btn-empty-primary" onclick="showPage('create')">
+                <i class="fas fa-plus-circle"></i> Create Trip
+            </button>
+            <button class="btn-empty-secondary" onclick="showPage('explore')">
+                <i class="fas fa-compass"></i> Explore Trips
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- CREATE TRIP PAGE -->
         <div class="page" id="page-create">
@@ -352,105 +344,126 @@
         </div>
 
         <!-- PROFILE PAGE -->
-        <div class="page" id="page-profile">
-            <h1 class="page-title"><i class="fas fa-user"></i> My Profile</h1>
-            <div class="profile-container">
-                <div class="profile-header-card">
-                    <div class="profile-avatar-large">U</div>
-                    <h2>User Name</h2>
-                    <span class="profile-badge"><i class="fas fa-shield-alt"></i> Verified Member</span>
-                    <p>College Name | Travel Enthusiast</p>
+<div class="page" id="page-profile">
+    <h1 class="page-title"><i class="fas fa-user"></i> My Profile</h1>
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header-card">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-large" id="profileAvatar">U</div>
+                <button class="upload-pic-btn" onclick="document.getElementById('profilePicInput').click()">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <input type="file" id="profilePicInput" accept="image/*" style="display:none" onchange="uploadProfilePic(event)">
+            </div>
+            <h2 id="profileName">Loading...</h2>
+            <span class="profile-badge" id="verificationBadge">
+                <i class="fas fa-clock"></i> Pending Verification
+            </span>
+            <p id="profileCollege">College Name</p>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="profile-detail-card">
+            <div class="card-header-flex">
+                <h3><i class="fas fa-id-card"></i> Personal Info</h3>
+                <button class="btn-toggle-edit" id="editToggleBtn" onclick="toggleEditMode()">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            
+            <!-- View Mode -->
+            <div id="viewMode">
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-user"></i> Name</span>
+                    <span class="value" id="viewName">-</span>
                 </div>
-                <div class="profile-details">
-                    <div class="profile-detail-card">
-                        <h3>Personal Info</h3>
-                        <div class="detail-row">
-                            <span class="label">Name</span>
-                            <span class="value">User Name</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Email</span>
-                            <span class="value">user@email.com</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">College</span>
-                            <span class="value">Your College</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Joined</span>
-                            <span class="value">Dec 2024</span>
-                        </div>
-                        <button class="btn-edit-profile">
-                            <i class="fas fa-edit"></i> Edit Profile
-                        </button>
-                    </div>
-                    <div class="profile-detail-card">
-                        <h3>Travel Stats</h3>
-                        <div class="travel-stats">
-                            <div class="travel-stat">
-                                <i class="fas fa-suitcase-rolling"></i>
-                                <span class="number">5</span>
-                                <span class="label">Trips</span>
-                            </div>
-                            <div class="travel-stat">
-                                <i class="fas fa-users"></i>
-                                <span class="number">12</span>
-                                <span class="label">Buddies</span>
-                            </div>
-                            <div class="travel-stat">
-                                <i class="fas fa-star"></i>
-                                <span class="number">4.8</span>
-                                <span class="label">Rating</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="detail-row locked-row">
+                    <span class="label">
+                        <i class="fas fa-envelope"></i> Email
+                        <i class="fas fa-lock locked-icon" title="Cannot be edited for security"></i>
+                    </span>
+                    <span class="value" id="viewEmail">-</span>
                 </div>
+                <div class="detail-row locked-row">
+                    <span class="label">
+                        <i class="fas fa-phone"></i> Phone
+                        <i class="fas fa-lock locked-icon" title="Cannot be edited for security"></i>
+                    </span>
+                    <span class="value" id="viewPhone">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-university"></i> College</span>
+                    <span class="value" id="viewCollege">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-calendar"></i> Joined</span>
+                    <span class="value" id="viewJoined">-</span>
+                </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div id="editMode" style="display:none;">
+                <div class="edit-field">
+                    <label><i class="fas fa-user"></i> Name</label>
+                    <input type="text" id="editName" placeholder="Your full name">
+                </div>
+                <div class="edit-field locked-field">
+                    <label>
+                        <i class="fas fa-envelope"></i> Email 
+                        <span class="locked-text">🔒 Locked for security</span>
+                    </label>
+                    <input type="email" id="editEmail" disabled readonly>
+                </div>
+                <div class="edit-field locked-field">
+                    <label>
+                        <i class="fas fa-phone"></i> Phone 
+                        <span class="locked-text">🔒 Locked for security</span>
+                    </label>
+                    <input type="tel" id="editPhone" disabled readonly>
+                </div>
+                <div class="edit-field">
+                    <label><i class="fas fa-university"></i> College</label>
+                    <input type="text" id="editCollege" placeholder="Your college name">
+                </div>
+                <div class="edit-actions">
+                    <button class="btn-save" onclick="saveProfile()">
+                        <i class="fas fa-check"></i> Save Changes
+                    </button>
+                    <button class="btn-cancel" onclick="cancelEdit()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+                <p class="security-note">
+                    <i class="fas fa-shield-alt"></i>
+                    Email & Phone are locked to prevent scams and protect your identity.
+                </p>
             </div>
         </div>
 
-        <!-- EXPLORE PAGE -->
-        <div class="page" id="page-explore">
-            <h1 class="page-title"><i class="fas fa-compass"></i> Explore Trips</h1>
-            <div class="explore-filters">
-                <button class="filter-btn active">All</button>
-                <button class="filter-btn">🏔️ Mountains</button>
-                <button class="filter-btn">🏖️ Beach</button>
-                <button class="filter-btn">🏕️ Camping</button>
-                <button class="filter-btn">🎉 Party</button>
-            </div>
-            <div class="explore-grid">
-                <div class="explore-card">
-                    <div class="explore-banner" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        <span class="explore-tag">🏔️ Mountains</span>
-                        <span class="spots-left">4 spots left</span>
-                    </div>
-                    <div class="explore-info">
-                        <h3>Spiti Valley Trek</h3>
-                        <p><i class="fas fa-map-marker-alt"></i> Himachal Pradesh</p>
-                        <p><i class="fas fa-calendar"></i> Jan 15 - Jan 22</p>
-                        <div class="explore-footer">
-                            <span class="explore-price">₹8,000/person</span>
-                            <button class="btn-join">Join Trip</button>
-                        </div>
-                    </div>
+        <!-- Travel Stats -->
+        <div class="profile-detail-card">
+            <h3><i class="fas fa-chart-line"></i> Travel Stats</h3>
+            <div class="travel-stats">
+                <div class="travel-stat">
+                    <i class="fas fa-suitcase-rolling"></i>
+                    <span class="number">0</span>
+                    <span class="label">Trips</span>
                 </div>
-                <div class="explore-card">
-                    <div class="explore-banner" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                        <span class="explore-tag">🏖️ Beach</span>
-                        <span class="spots-left">2 spots left</span>
-                    </div>
-                    <div class="explore-info">
-                        <h3>Goa NYE Party</h3>
-                        <p><i class="fas fa-map-marker-alt"></i> Goa</p>
-                        <p><i class="fas fa-calendar"></i> Dec 30 - Jan 3</p>
-                        <div class="explore-footer">
-                            <span class="explore-price">₹12,000/person</span>
-                            <button class="btn-join">Join Trip</button>
-                        </div>
-                    </div>
+                <div class="travel-stat">
+                    <i class="fas fa-users"></i>
+                    <span class="number">0</span>
+                    <span class="label">Buddies</span>
+                </div>
+                <div class="travel-stat">
+                    <i class="fas fa-star"></i>
+                    <span class="number">-</span>
+                    <span class="label">Rating</span>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- SQUAD PAGE -->
         <div class="page" id="page-squad">
