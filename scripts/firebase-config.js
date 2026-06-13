@@ -19,12 +19,20 @@ import {
     doc, 
     setDoc, 
     getDoc, 
+    deleteDoc,
     collection,
     addDoc,
     getDocs,
     query,
     where,
-    serverTimestamp
+    orderBy,
+    limit,
+    serverTimestamp,
+    onSnapshot,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // Your Firebase configuration
@@ -42,7 +50,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Export for use in other files
+// Export EVERYTHING for other files to use
 export { 
     auth, 
     db,
@@ -55,12 +63,20 @@ export {
     doc,
     setDoc,
     getDoc,
+    deleteDoc,
     collection,
     addDoc,
     getDocs,
     query,
     where,
-    serverTimestamp
+    orderBy,
+    limit,
+    serverTimestamp,
+    onSnapshot,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    increment
 };
 
 console.log("🔥 Firebase Connected!");
