@@ -692,6 +692,144 @@ body {
     .quick-nav a { width: 200px; justify-content: center; }
 }
 
+/* TEAM SECTION (Founder + Co-Founder) */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    max-width: 1000px;
+    width: 100%;
+    animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.team-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    padding: 35px 25px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.team-card:hover {
+    border-color: var(--accent-1);
+    box-shadow: var(--glow-1);
+    transform: translateY(-5px);
+}
+
+.team-image {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.team-image img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 3px solid var(--accent-1);
+}
+
+.team-badge {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+}
+
+.founder-badge-style {
+    background: linear-gradient(135deg, #6c63ff, #764ba2);
+    border: 2px solid #6c63ff;
+}
+
+.cofounder-badge-style {
+    background: linear-gradient(135deg, #ff6584, #f5576c);
+    border: 2px solid #ff6584;
+}
+
+.team-info {
+    margin-top: 15px;
+}
+
+.team-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.team-role {
+    color: var(--accent-1);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.team-bio {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.team-socials {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.team-socials a {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.team-socials a:hover {
+    background: var(--gradient-1);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-3px);
+}
+
+/* SINGLE ITEM CENTERED */
+.destinations-grid.single-item,
+.testimonials-slider.single-item {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .team-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .team-image img {
+        width: 150px;
+        height: 150px;
+    }
+}
+
 @media (max-width: 480px) {
     .hero-title { font-size: 1.8rem; }
     .hero-buttons { flex-direction: column; align-items: center; }
