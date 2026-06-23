@@ -1422,17 +1422,49 @@ async function displayTripDetails(trip) {
                     </div>
                 </div>
                 
-                <!-- Chat Coming Soon -->
-                <div class="trip-section">
-                    <h3 class="trip-section-title">
-                        <i class="fas fa-comments"></i> Group Chat
-                    </h3>
-                    <div class="coming-soon-section">
-                        <i class="fas fa-comment-dots"></i>
-                        <h3>Group Chat Coming Soon!</h3>
-                        <p>Chat with your travel buddies in real-time</p>
-                    </div>
-                </div>
+                <!-- Group Chat -->
+${(isUserMember || isUserCreator) ? `
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-comments"></i> Group Chat
+        <span class="live-indicator">
+            <span class="live-dot"></span> LIVE
+        </span>
+    </h3>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages-${trip.id}">
+            <div class="loading-state" style="padding: 20px;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading messages...</p>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chatInput-${trip.id}" 
+                class="chat-input" 
+                placeholder="Type a message..."
+                onkeypress="if(event.key==='Enter') sendChatMessage('${trip.id}')"
+                maxlength="500"
+            >
+            <button class="chat-send-btn" onclick="sendChatMessage('${trip.id}')">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+` : `
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-comments"></i> Group Chat
+    </h3>
+    <div class="coming-soon-section">
+        <i class="fas fa-lock"></i>
+        <h3>Members Only Chat</h3>
+        <p>Join this trip to chat with members!</p>
+    </div>
+</div>
+`}
                 
                 <!-- Actions -->
                 <div class="trip-actions">
@@ -1442,6 +1474,175 @@ async function displayTripDetails(trip) {
         </div>
     `;
 }
+
+// ============================
+// GROUP CHAT SYSTEM
+// ============================
+
+let chatUnsubscribers = {}; // Track active chat listeners
+
+async function loadChatMessages(tripId) {
+    const messagesContainer = document.getElementById(`chatMessages-${tripId}`);
+    if (!messagesContainer) return;
+    
+    try {
+        const { onSnapshot, query, orderBy, collection } = await import('./firebase-config.js');
+        
+        // Real-time listener for messages
+        const messagesRef = collection(db, "trips", tripId, "messages");
+        const messagesQuery = query(messagesRef, orderBy("timestamp", "asc"));
+        
+        // Unsubscribe previous listener if exists
+        if (chatUnsubscribers[tripId]) {
+            chatUnsubscribers[tripId]();
+        }
+        
+        // Set up real-time listener
+        chatUnsubscribers[tripId] = onSnapshot(messagesQuery, (snapshot) => {
+            const messages = [];
+            snapshot.forEach((doc) => {
+                messages.push({ id: doc.id, ...doc.data() });
+            });
+            
+            displayChatMessages(tripId, messages);
+        });
+        
+    } catch (error) {
+        console.error('Error loading chat:', error);
+        messagesContainer.innerHTML = `
+            <div class="empty-chat">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load chat</p>
+            </div>
+        `;
+    }
+}
+
+function displayChatMessages(tripId, messages) {
+    const container = document.getElementById(`chatMessages-${tripId}`);
+    if (!container) return;
+    
+    if (messages.length === 0) {
+        container.innerHTML = `
+            <div class="empty-chat">
+                <i class="fas fa-comments"></i>
+                <h4>No messages yet!</h4>
+                <p>Be the first to say hi 👋</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = messages.map(msg => createChatBubble(msg)).join('');
+    
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+function createChatBubble(msg) {
+    const isMine = msg.senderId === currentUser?.uid;
+    const initial = (msg.senderName || 'U')[0].toUpperCase();
+    
+    // Format time
+    let timeStr = 'Just now';
+    if (msg.timestamp) {
+        try {
+            const date = msg.timestamp.toDate();
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+            
+            if (diff < 60) {
+                timeStr = 'Just now';
+            } else if (diff < 3600) {
+                timeStr = `${Math.floor(diff / 60)}m ago`;
+            } else if (diff < 86400) {
+                timeStr = `${Math.floor(diff / 3600)}h ago`;
+            } else {
+                timeStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            }
+        } catch (e) {
+            timeStr = 'Just now';
+        }
+    }
+    
+    if (isMine) {
+        return `
+            <div class="chat-bubble-row mine">
+                <div class="chat-bubble mine">
+                    <div class="chat-text">${escapeHtml(msg.text)}</div>
+                    <div class="chat-time">${timeStr}</div>
+                </div>
+                <div class="chat-avatar mine">${initial}</div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="chat-bubble-row">
+                <div class="chat-avatar">${initial}</div>
+                <div class="chat-bubble">
+                    <div class="chat-sender">${msg.senderName}</div>
+                    <div class="chat-text">${escapeHtml(msg.text)}</div>
+                    <div class="chat-time">${timeStr}</div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+window.sendChatMessage = async function(tripId) {
+    const input = document.getElementById(`chatInput-${tripId}`);
+    if (!input) return;
+    
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // Disable input while sending
+    input.disabled = true;
+    
+    try {
+        const { collection, addDoc, serverTimestamp } = await import('./firebase-config.js');
+        
+        await addDoc(collection(db, "trips", tripId, "messages"), {
+            text: text,
+            senderId: currentUser.uid,
+            senderName: userData.fullName,
+            senderEmail: userData.email,
+            timestamp: serverTimestamp()
+        });
+        
+        // Clear input
+        input.value = '';
+        input.disabled = false;
+        input.focus();
+        
+    } catch (error) {
+        console.error('Send error:', error);
+        alert('❌ Failed to send message. Try again!');
+        input.disabled = false;
+    }
+};
+
+// Load chat when trip details opens
+const originalOpenTripDetails = window.openTripDetails;
+window.openTripDetails = async function(tripId) {
+    await originalOpenTripDetails(tripId);
+    
+    // Wait for DOM to render then load chat
+    setTimeout(() => {
+        const chatContainer = document.getElementById(`chatMessages-${tripId}`);
+        if (chatContainer) {
+            loadChatMessages(tripId);
+        }
+    }, 500);
+};
+
+console.log('💬 Group Chat System Loaded!');
 
 // LEAVE TRIP
 window.leaveTrip = async function(tripId) {
