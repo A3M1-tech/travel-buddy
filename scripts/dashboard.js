@@ -1609,14 +1609,15 @@ async function displayExpenses(tripId, expenses) {
         document.getElementById(`balanceSummary-${tripId}`).style.display = 'none';
         return;
     }
-    
-    container.innerHTML = expenses.map(exp => createExpenseItem(exp, tripId, memberCount)).join('');
-    
+
+    const isUserCreatorOfTrip = tripData.createdBy === currentUser?.uid;
+container.innerHTML = expenses.map(exp => createExpenseItem(exp, tripId, memberCount, isUserCreatorOfTrip)).join('');   
+
     // Calculate and show balance
     calculateBalance(tripId, expenses, tripData);
 }
 
-function createExpenseItem(expense, tripId, memberCount) {
+function createExpenseItem(expense, tripId, memberCount, isUserCreatorOfTrip = false) {
     const isMine = expense.paidBy === currentUser?.uid;
     const perPerson = Math.round(expense.amount / memberCount);
     
@@ -1640,11 +1641,11 @@ function createExpenseItem(expense, tripId, memberCount) {
             </div>
             <div class="expense-amount-section">
                 <div class="expense-amount">₹${expense.amount.toLocaleString('en-IN')}</div>
-                ${isMine ? `
-                    <button class="btn-delete-expense" onclick="deleteExpense('${tripId}', '${expense.id}')" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
+                ${(isMine || isUserCreatorOfTrip) ? `
+    <button class="btn-delete-expense" onclick="deleteExpense('${tripId}', '${expense.id}')" title="Delete">
+        <i class="fas fa-trash"></i>
+    </button>
+` : ''}
             </div>
         </div>
     `;
@@ -1679,6 +1680,8 @@ function getRandomGradient(id) {
 async function calculateBalance(tripId, expenses, tripData) {
     const memberCount = tripData.memberCount || 1;
     const members = tripData.members || [];
+    const settlements = tripData.settlements || [];
+    const isUserCreator = tripData.createdBy === currentUser?.uid;
     
     // Calculate how much each member paid
     const paidByMember = {};
@@ -1693,14 +1696,24 @@ async function calculateBalance(tripId, expenses, tripData) {
     const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const fairShare = totalAmount / memberCount;
     
-    // Calculate balances
+    // Apply settlements
+    const settledAmounts = {}; // uid -> total settled
+    members.forEach(uid => settledAmounts[uid] = 0);
+    
+    settlements.forEach(s => {
+        if (settledAmounts[s.from] !== undefined) {
+            settledAmounts[s.from] += s.amount;
+        }
+    });
+    
+    // Calculate net balances (after settlements)
     const balances = {};
     for (const uid of members) {
         const paid = paidByMember[uid] || 0;
-        balances[uid] = paid - fairShare; // positive = others owe, negative = owes others
+        const settled = settledAmounts[uid] || 0;
+        balances[uid] = (paid - fairShare) + settled;
     }
     
-    // Get member names
     const balanceListContainer = document.getElementById(`balanceList-${tripId}`);
     const balanceSummary = document.getElementById(`balanceSummary-${tripId}`);
     
@@ -1720,13 +1733,13 @@ async function calculateBalance(tripId, expenses, tripData) {
                 const member = memberSnap.data();
                 const balance = balances[uid];
                 const isMe = uid === currentUser?.uid;
+                const memberName = member.fullName || 'Unknown';
                 
                 if (Math.abs(balance) < 1) {
-                    // Settled
                     balanceHTML += `
                         <div class="balance-row settled">
                             <div class="balance-name">
-                                ${isMe ? '👤 You' : `👤 ${member.fullName}`}
+                                ${isMe ? '👤 You' : `👤 ${memberName}`}
                             </div>
                             <div class="balance-amount settled">
                                 ✅ Settled
@@ -1734,11 +1747,11 @@ async function calculateBalance(tripId, expenses, tripData) {
                         </div>
                     `;
                 } else if (balance > 0) {
-                    // Gets money
+                    // This person GETS money
                     balanceHTML += `
                         <div class="balance-row positive">
                             <div class="balance-name">
-                                ${isMe ? '👤 You get' : `👤 ${member.fullName} gets`}
+                                ${isMe ? '👤 You get back' : `👤 ${memberName} gets back`}
                             </div>
                             <div class="balance-amount positive">
                                 +₹${Math.round(balance).toLocaleString('en-IN')}
@@ -1746,15 +1759,25 @@ async function calculateBalance(tripId, expenses, tripData) {
                         </div>
                     `;
                 } else {
-                    // Owes money
+                    // This person OWES money
+                    const owesAmount = Math.round(Math.abs(balance));
+                    const canMarkPaid = isUserCreator || isMe;
+                    
                     balanceHTML += `
                         <div class="balance-row negative">
-                            <div class="balance-name">
-                                ${isMe ? '👤 You owe' : `👤 ${member.fullName} owes`}
+                            <div class="balance-name-section">
+                                <div class="balance-name">
+                                    ${isMe ? '👤 You owe' : `👤 ${memberName} owes`}
+                                </div>
+                                <div class="balance-amount negative">
+                                    -₹${owesAmount.toLocaleString('en-IN')}
+                                </div>
                             </div>
-                            <div class="balance-amount negative">
-                                -₹${Math.round(Math.abs(balance)).toLocaleString('en-IN')}
-                            </div>
+                            ${canMarkPaid ? `
+                                <button class="btn-mark-paid" onclick="markAsPaid('${tripId}', '${uid}', '${memberName}', ${owesAmount})">
+                                    <i class="fas fa-check-circle"></i> Mark as Paid
+                                </button>
+                            ` : ''}
                         </div>
                     `;
                 }
@@ -1762,6 +1785,31 @@ async function calculateBalance(tripId, expenses, tripData) {
         } catch (e) {
             console.error('Error loading member:', e);
         }
+    }
+    
+    // Add settlement history if exists
+    if (settlements.length > 0) {
+        balanceHTML += `
+            <div class="settlement-history">
+                <h5><i class="fas fa-history"></i> Payment History</h5>
+                ${settlements.map(s => {
+                    let dateStr = 'Recently';
+                    try {
+                        if (s.date) {
+                            const d = new Date(s.date);
+                            dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                        }
+                    } catch (e) {}
+                    return `
+                        <div class="settlement-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>${s.fromName}</strong> paid <strong>₹${s.amount.toLocaleString('en-IN')}</strong></span>
+                            <span class="settlement-date">${dateStr}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     }
     
     balanceListContainer.innerHTML = balanceHTML;
@@ -1839,6 +1887,42 @@ window.openTripDetails = async function(tripId) {
 };
 
 console.log('💰 Smart Split System Loaded!');
+// ============================
+// MARK PAYMENT AS PAID
+// ============================
+window.markAsPaid = async function(tripId, userId, userName, amount) {
+    if (!confirm(`Mark ${userName}'s payment of ₹${amount.toLocaleString('en-IN')} as PAID?\n\nThis will settle the balance.`)) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const settlements = tripData.settlements || [];
+        
+        // Add new settlement
+        settlements.push({
+            from: userId,
+            fromName: userName,
+            amount: amount,
+            date: new Date().toISOString(),
+            markedBy: currentUser.uid,
+            markedByName: userData.fullName
+        });
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            settlements: settlements
+        }, { merge: true });
+        
+        alert(`✅ Payment marked as settled!\n\n${userName}'s balance is now cleared.`);
+        
+    } catch (error) {
+        console.error('Mark paid error:', error);
+        alert('❌ Failed to mark as paid. Try again!');
+    }
+};
+
 // ============================
 // GROUP CHAT SYSTEM
 // ============================
