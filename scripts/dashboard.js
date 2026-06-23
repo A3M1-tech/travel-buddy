@@ -1421,7 +1421,78 @@ async function displayTripDetails(trip) {
                         <p>Members will be able to share trip memories here</p>
                     </div>
                 </div>
-                
+                <!-- SMART SPLIT / EXPENSES -->
+${(isUserMember || isUserCreator) ? `
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-wallet"></i> Trip Expenses
+        <span class="expense-total-badge" id="expenseTotalBadge-${trip.id}">₹0</span>
+    </h3>
+    <div class="expense-container">
+        <!-- Summary -->
+        <div class="expense-summary" id="expenseSummary-${trip.id}">
+            <div class="summary-card">
+                <div class="summary-icon" style="background: linear-gradient(135deg, #6c63ff, #764ba2);">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div>
+                    <h4 id="totalExpense-${trip.id}">₹0</h4>
+                    <p>Total Spent</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon" style="background: linear-gradient(135deg, #00cc44, #00aa33);">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <h4 id="perPersonExpense-${trip.id}">₹0</h4>
+                    <p>Per Person</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Expense Form -->
+        <div class="add-expense-card">
+            <h4><i class="fas fa-plus-circle"></i> Add Expense</h4>
+            <div class="expense-form">
+                <input 
+                    type="text" 
+                    id="expenseName-${trip.id}" 
+                    placeholder="What was it for? (e.g., Hotel)"
+                    maxlength="50"
+                >
+                <input 
+                    type="number" 
+                    id="expenseAmount-${trip.id}" 
+                    placeholder="Amount in ₹"
+                    min="1"
+                >
+                <button class="btn-add-expense" onclick="addExpense('${trip.id}')">
+                    <i class="fas fa-plus"></i> Add Expense
+                </button>
+            </div>
+            <p class="expense-note">
+                <i class="fas fa-info-circle"></i>
+                Cost will be split equally among all ${trip.memberCount || 1} members
+            </p>
+        </div>
+        
+        <!-- Expenses List -->
+        <div class="expenses-list" id="expensesList-${trip.id}">
+            <div class="loading-state" style="padding: 20px;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading expenses...</p>
+            </div>
+        </div>
+        
+        <!-- Balance Summary -->
+        <div class="balance-summary" id="balanceSummary-${trip.id}" style="display:none;">
+            <h4><i class="fas fa-balance-scale"></i> Who Owes What</h4>
+            <div id="balanceList-${trip.id}"></div>
+        </div>
+    </div>
+</div>
+` : ''}
                 <!-- Group Chat -->
 ${(isUserMember || isUserCreator) ? `
 <div class="trip-section">
@@ -1474,7 +1545,300 @@ ${(isUserMember || isUserCreator) ? `
         </div>
     `;
 }
+// ============================
+// SMART SPLIT - EXPENSE SYSTEM
+// ============================
 
+let expenseUnsubscribers = {};
+
+async function loadExpenses(tripId) {
+    const container = document.getElementById(`expensesList-${tripId}`);
+    if (!container) return;
+    
+    try {
+        const { onSnapshot, query, orderBy, collection } = await import('./firebase-config.js');
+        
+        const expensesRef = collection(db, "trips", tripId, "expenses");
+        const expensesQuery = query(expensesRef, orderBy("createdAt", "desc"));
+        
+        if (expenseUnsubscribers[tripId]) {
+            expenseUnsubscribers[tripId]();
+        }
+        
+        expenseUnsubscribers[tripId] = onSnapshot(expensesQuery, async (snapshot) => {
+            const expenses = [];
+            snapshot.forEach((doc) => {
+                expenses.push({ id: doc.id, ...doc.data() });
+            });
+            
+            await displayExpenses(tripId, expenses);
+        });
+        
+    } catch (error) {
+        console.error('Error loading expenses:', error);
+    }
+}
+
+async function displayExpenses(tripId, expenses) {
+    const container = document.getElementById(`expensesList-${tripId}`);
+    if (!container) return;
+    
+    // Get trip data for member count
+    const tripSnap = await getDoc(doc(db, "trips", tripId));
+    const tripData = tripSnap.data();
+    const memberCount = tripData.memberCount || 1;
+    
+    // Calculate totals
+    const totalAmount = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const perPerson = memberCount > 0 ? Math.round(totalAmount / memberCount) : 0;
+    
+    // Update summary
+    document.getElementById(`totalExpense-${tripId}`).textContent = `₹${totalAmount.toLocaleString('en-IN')}`;
+    document.getElementById(`perPersonExpense-${tripId}`).textContent = `₹${perPerson.toLocaleString('en-IN')}`;
+    document.getElementById(`expenseTotalBadge-${tripId}`).textContent = `₹${totalAmount.toLocaleString('en-IN')}`;
+    
+    // Display expenses
+    if (expenses.length === 0) {
+        container.innerHTML = `
+            <div class="empty-expenses">
+                <i class="fas fa-receipt"></i>
+                <p>No expenses yet</p>
+                <small>Add the first expense above!</small>
+            </div>
+        `;
+        document.getElementById(`balanceSummary-${tripId}`).style.display = 'none';
+        return;
+    }
+    
+    container.innerHTML = expenses.map(exp => createExpenseItem(exp, tripId, memberCount)).join('');
+    
+    // Calculate and show balance
+    calculateBalance(tripId, expenses, tripData);
+}
+
+function createExpenseItem(expense, tripId, memberCount) {
+    const isMine = expense.paidBy === currentUser?.uid;
+    const perPerson = Math.round(expense.amount / memberCount);
+    
+    let dateStr = 'Just now';
+    if (expense.createdAt) {
+        try {
+            const date = expense.createdAt.toDate();
+            dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        } catch (e) {}
+    }
+    
+    return `
+        <div class="expense-item">
+            <div class="expense-icon" style="background: ${getRandomGradient(expense.id)};">
+                <i class="fas ${getExpenseIcon(expense.name)}"></i>
+            </div>
+            <div class="expense-details">
+                <h5>${escapeHtml(expense.name)}</h5>
+                <p>Paid by <strong>${expense.paidByName}</strong> • ${dateStr}</p>
+                <span class="per-person-tag">Each owes: ₹${perPerson.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="expense-amount-section">
+                <div class="expense-amount">₹${expense.amount.toLocaleString('en-IN')}</div>
+                ${isMine ? `
+                    <button class="btn-delete-expense" onclick="deleteExpense('${tripId}', '${expense.id}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function getExpenseIcon(name) {
+    const lowName = name.toLowerCase();
+    if (lowName.includes('hotel') || lowName.includes('room') || lowName.includes('stay')) return 'fa-hotel';
+    if (lowName.includes('food') || lowName.includes('lunch') || lowName.includes('dinner') || lowName.includes('breakfast')) return 'fa-utensils';
+    if (lowName.includes('bus') || lowName.includes('train') || lowName.includes('cab') || lowName.includes('taxi') || lowName.includes('uber')) return 'fa-bus';
+    if (lowName.includes('flight') || lowName.includes('plane')) return 'fa-plane';
+    if (lowName.includes('shop') || lowName.includes('gift')) return 'fa-shopping-bag';
+    if (lowName.includes('ticket') || lowName.includes('entry')) return 'fa-ticket-alt';
+    if (lowName.includes('drink') || lowName.includes('coffee') || lowName.includes('tea')) return 'fa-coffee';
+    return 'fa-receipt';
+}
+
+function getRandomGradient(id) {
+    const gradients = [
+        'linear-gradient(135deg, #6c63ff, #764ba2)',
+        'linear-gradient(135deg, #ff6584, #ff4444)',
+        'linear-gradient(135deg, #4ecdc4, #44aa99)',
+        'linear-gradient(135deg, #ffd700, #ff8c00)',
+        'linear-gradient(135deg, #00cc44, #00aa33)',
+        'linear-gradient(135deg, #f093fb, #f5576c)',
+        'linear-gradient(135deg, #4facfe, #00f2fe)'
+    ];
+    const index = id.charCodeAt(0) % gradients.length;
+    return gradients[index];
+}
+
+async function calculateBalance(tripId, expenses, tripData) {
+    const memberCount = tripData.memberCount || 1;
+    const members = tripData.members || [];
+    
+    // Calculate how much each member paid
+    const paidByMember = {};
+    members.forEach(uid => paidByMember[uid] = 0);
+    
+    expenses.forEach(exp => {
+        if (paidByMember[exp.paidBy] !== undefined) {
+            paidByMember[exp.paidBy] += exp.amount;
+        }
+    });
+    
+    const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const fairShare = totalAmount / memberCount;
+    
+    // Calculate balances
+    const balances = {};
+    for (const uid of members) {
+        const paid = paidByMember[uid] || 0;
+        balances[uid] = paid - fairShare; // positive = others owe, negative = owes others
+    }
+    
+    // Get member names
+    const balanceListContainer = document.getElementById(`balanceList-${tripId}`);
+    const balanceSummary = document.getElementById(`balanceSummary-${tripId}`);
+    
+    if (totalAmount === 0) {
+        balanceSummary.style.display = 'none';
+        return;
+    }
+    
+    balanceSummary.style.display = 'block';
+    
+    let balanceHTML = '';
+    
+    for (const uid of members) {
+        try {
+            const memberSnap = await getDoc(doc(db, "users", uid));
+            if (memberSnap.exists()) {
+                const member = memberSnap.data();
+                const balance = balances[uid];
+                const isMe = uid === currentUser?.uid;
+                
+                if (Math.abs(balance) < 1) {
+                    // Settled
+                    balanceHTML += `
+                        <div class="balance-row settled">
+                            <div class="balance-name">
+                                ${isMe ? '👤 You' : `👤 ${member.fullName}`}
+                            </div>
+                            <div class="balance-amount settled">
+                                ✅ Settled
+                            </div>
+                        </div>
+                    `;
+                } else if (balance > 0) {
+                    // Gets money
+                    balanceHTML += `
+                        <div class="balance-row positive">
+                            <div class="balance-name">
+                                ${isMe ? '👤 You get' : `👤 ${member.fullName} gets`}
+                            </div>
+                            <div class="balance-amount positive">
+                                +₹${Math.round(balance).toLocaleString('en-IN')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Owes money
+                    balanceHTML += `
+                        <div class="balance-row negative">
+                            <div class="balance-name">
+                                ${isMe ? '👤 You owe' : `👤 ${member.fullName} owes`}
+                            </div>
+                            <div class="balance-amount negative">
+                                -₹${Math.round(Math.abs(balance)).toLocaleString('en-IN')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        } catch (e) {
+            console.error('Error loading member:', e);
+        }
+    }
+    
+    balanceListContainer.innerHTML = balanceHTML;
+}
+
+window.addExpense = async function(tripId) {
+    const nameInput = document.getElementById(`expenseName-${tripId}`);
+    const amountInput = document.getElementById(`expenseAmount-${tripId}`);
+    
+    const name = nameInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    
+    if (!name || name.length < 2) {
+        alert('❌ Please enter expense name (min 2 characters)');
+        return;
+    }
+    
+    if (!amount || amount < 1) {
+        alert('❌ Please enter valid amount');
+        return;
+    }
+    
+    if (amount > 1000000) {
+        alert('❌ Amount too large!');
+        return;
+    }
+    
+    try {
+        const { collection, addDoc, serverTimestamp } = await import('./firebase-config.js');
+        
+        await addDoc(collection(db, "trips", tripId, "expenses"), {
+            name: name,
+            amount: amount,
+            paidBy: currentUser.uid,
+            paidByName: userData.fullName,
+            createdAt: serverTimestamp()
+        });
+        
+        // Clear inputs
+        nameInput.value = '';
+        amountInput.value = '';
+        
+        // Visual feedback
+        nameInput.focus();
+        
+    } catch (error) {
+        console.error('Add expense error:', error);
+        alert('❌ Failed to add expense');
+    }
+};
+
+window.deleteExpense = async function(tripId, expenseId) {
+    if (!confirm('Delete this expense?')) return;
+    
+    try {
+        const { deleteDoc } = await import('./firebase-config.js');
+        await deleteDoc(doc(db, "trips", tripId, "expenses", expenseId));
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('❌ Failed to delete');
+    }
+};
+
+// Load expenses when trip details opens
+const previousOpenTripDetails = window.openTripDetails;
+window.openTripDetails = async function(tripId) {
+    await previousOpenTripDetails(tripId);
+    
+    setTimeout(() => {
+        const expenseContainer = document.getElementById(`expensesList-${tripId}`);
+        if (expenseContainer) {
+            loadExpenses(tripId);
+        }
+    }, 500);
+};
+
+console.log('💰 Smart Split System Loaded!');
 // ============================
 // GROUP CHAT SYSTEM
 // ============================
