@@ -684,14 +684,14 @@ function createExploreCard(trip) {
             <i class="fas fa-lock"></i> Full
         </button>`;
     } else {
-        actionButton = `<button class="btn-join" onclick="requestJoinTrip('${trip.id}')">
-            <i class="fas fa-plus"></i> Request to Join
-        </button>`;
-    }
+    actionButton = `<button class="btn-join" onclick="event.stopPropagation(); requestJoinTrip('${trip.id}')">
+        <i class="fas fa-plus"></i> Request to Join
+    </button>`;
+   }
     
     return `
-        <div class="explore-card" data-types="${(trip.types || []).join(',')}">
-            <div class="explore-banner" style="background: ${gradients[firstType] || gradients.adventure};">
+    <div class="explore-card" data-types="${(trip.types || []).join(',')}" onclick="openTripDetails('${trip.id}')" style="cursor:pointer;">
+        <div class="explore-banner" style="background: ${gradients[firstType] || gradients.adventure};">
                 <div class="explore-banner-icon">
                     <i class="fas ${icons[firstType] || 'fa-suitcase-rolling'}"></i>
                 </div>
@@ -1157,3 +1157,322 @@ setInterval(() => {
 }, 30000);
 
 console.log('🎒 My Trips System Loaded!');
+
+// ============================
+// TRIP DETAILS PAGE
+// ============================
+
+let currentTripId = null;
+
+window.openTripDetails = async function(tripId) {
+    currentTripId = tripId;
+    showPage('trip-details');
+    
+    const container = document.getElementById('tripDetailsContent');
+    container.innerHTML = `
+        <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading trip details...</p>
+        </div>
+    `;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        
+        if (!tripSnap.exists()) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2>Trip Not Found</h2>
+                    <p>This trip may have been removed.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const trip = { id: tripSnap.id, ...tripSnap.data() };
+        await displayTripDetails(trip);
+        
+    } catch (error) {
+        console.error('Error loading trip:', error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h2>Error Loading Trip</h2>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+};
+
+async function displayTripDetails(trip) {
+    const container = document.getElementById('tripDetailsContent');
+    
+    const startDate = new Date(trip.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const endDate = new Date(trip.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    
+    // Calculate days
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
+    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    const spotsLeft = trip.maxMembers - (trip.memberCount || 1);
+    const isFull = spotsLeft <= 0;
+    const isUserMember = trip.members && trip.members.includes(currentUser?.uid);
+    const isUserCreator = trip.createdBy === currentUser?.uid;
+    const hasRequested = trip.joinRequests?.some(req => req.userId === currentUser?.uid);
+    
+    // Get gradient
+    const firstType = trip.types?.[0] || 'adventure';
+    const gradients = {
+        mountains: 'linear-gradient(135deg, #667eea, #764ba2)',
+        beach: 'linear-gradient(135deg, #f093fb, #f5576c)',
+        camping: 'linear-gradient(135deg, #4facfe, #00f2fe)',
+        party: 'linear-gradient(135deg, #fa709a, #fee140)',
+        adventure: 'linear-gradient(135deg, #30cfd0, #330867)',
+        spiritual: 'linear-gradient(135deg, #a8edea, #fed6e3)',
+        heritage: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
+        food: 'linear-gradient(135deg, #ff9a9e, #fad0c4)'
+    };
+    
+    const icons = {
+        mountains: 'fa-mountain',
+        beach: 'fa-umbrella-beach',
+        camping: 'fa-campground',
+        party: 'fa-music',
+        adventure: 'fa-hiking',
+        spiritual: 'fa-pray',
+        heritage: 'fa-landmark',
+        food: 'fa-utensils'
+    };
+    
+    // Load members data
+    let membersHTML = '';
+    if (trip.members && trip.members.length > 0) {
+        for (const memberId of trip.members) {
+            try {
+                const memberSnap = await getDoc(doc(db, "users", memberId));
+                if (memberSnap.exists()) {
+                    const member = memberSnap.data();
+                    const isCreator = memberId === trip.createdBy;
+                    membersHTML += `
+                        <div class="member-card">
+                            <div class="member-avatar">${(member.fullName || 'U')[0].toUpperCase()}</div>
+                            <div class="member-name">${member.fullName || 'User'}</div>
+                            <div class="member-college">${member.college || 'Unknown'}</div>
+                            ${isCreator ? '<div class="member-badge">👑 Creator</div>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error loading member:', e);
+            }
+        }
+    }
+    
+    // Action button
+    let actionButton = '';
+    if (isUserCreator) {
+        actionButton = `
+            <button class="btn-trip-action btn-trip-join" disabled style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
+                <i class="fas fa-crown"></i> You're The Creator
+            </button>
+        `;
+    } else if (isUserMember) {
+        actionButton = `
+            <button class="btn-trip-action btn-trip-leave" onclick="leaveTrip('${trip.id}')">
+                <i class="fas fa-sign-out-alt"></i> Leave Trip
+            </button>
+        `;
+    } else if (hasRequested) {
+        actionButton = `
+            <button class="btn-trip-action btn-trip-join" disabled>
+                <i class="fas fa-clock"></i> Request Sent
+            </button>
+        `;
+    } else if (isFull) {
+        actionButton = `
+            <button class="btn-trip-action btn-trip-join" disabled style="background: #666;">
+                <i class="fas fa-lock"></i> Trip Full
+            </button>
+        `;
+    } else {
+        actionButton = `
+            <button class="btn-trip-action btn-trip-join" onclick="requestJoinTrip('${trip.id}')">
+                <i class="fas fa-paper-plane"></i> Request to Join
+            </button>
+        `;
+    }
+    
+    container.innerHTML = `
+        <div class="trip-details-container">
+            <!-- Banner -->
+            <div class="trip-details-banner" style="background: ${gradients[firstType]};">
+                <i class="fas ${icons[firstType]} trip-banner-icon-big"></i>
+                <span class="trip-status-tag">✅ Approved Trip</span>
+                <h1 class="trip-details-title">${trip.name}</h1>
+                <p class="trip-details-location">
+                    <i class="fas fa-map-marker-alt"></i> ${trip.destination}
+                </p>
+            </div>
+            
+            <!-- Body -->
+            <div class="trip-details-body">
+                <!-- Quick Stats -->
+                <div class="trip-quick-stats">
+                    <div class="trip-quick-stat">
+                        <i class="fas fa-calendar"></i>
+                        <h4>${days}</h4>
+                        <p>Days</p>
+                    </div>
+                    <div class="trip-quick-stat">
+                        <i class="fas fa-users"></i>
+                        <h4>${trip.memberCount || 1}/${trip.maxMembers}</h4>
+                        <p>Members</p>
+                    </div>
+                    <div class="trip-quick-stat">
+                        <i class="fas fa-rupee-sign"></i>
+                        <h4>₹${trip.budget}</h4>
+                        <p>Per Person</p>
+                    </div>
+                    <div class="trip-quick-stat">
+                        <i class="fas fa-door-open"></i>
+                        <h4>${spotsLeft}</h4>
+                        <p>Spots Left</p>
+                    </div>
+                </div>
+                
+                <!-- Dates -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-calendar-alt"></i> Trip Dates
+                    </h3>
+                    <div class="trip-description-box">
+                        <strong>From:</strong> ${startDate} <br>
+                        <strong>To:</strong> ${endDate}
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-info-circle"></i> About This Trip
+                    </h3>
+                    <div class="trip-description-box">
+                        ${trip.description}
+                    </div>
+                </div>
+                
+                <!-- Trip Types -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-tags"></i> Trip Type
+                    </h3>
+                    <div class="trip-types-list">
+                        ${(trip.types || []).map(t => `<span class="trip-type-pill-big">${t}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <!-- Rules -->
+                ${trip.rules && trip.rules !== 'No specific rules' ? `
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-shield-alt"></i> Trip Rules
+                    </h3>
+                    <div class="trip-rules-box">
+                        ${trip.rules}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Creator -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-user-tie"></i> Trip Organizer
+                    </h3>
+                    <div class="trip-creator-box">
+                        <div class="creator-avatar-big">${(trip.creatorName || 'U')[0].toUpperCase()}</div>
+                        <div class="creator-info-big">
+                            <h4>${trip.creatorName} <i class="fas fa-crown"></i></h4>
+                            <p><i class="fas fa-university"></i> ${trip.creatorCollege}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Members -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-users"></i> Members (${trip.memberCount || 1})
+                    </h3>
+                    <div class="members-grid">
+                        ${membersHTML}
+                    </div>
+                </div>
+                
+                <!-- Photos Coming Soon -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-images"></i> Trip Memories
+                    </h3>
+                    <div class="coming-soon-section">
+                        <i class="fas fa-camera"></i>
+                        <h3>Photos & Videos Coming Soon!</h3>
+                        <p>Members will be able to share trip memories here</p>
+                    </div>
+                </div>
+                
+                <!-- Chat Coming Soon -->
+                <div class="trip-section">
+                    <h3 class="trip-section-title">
+                        <i class="fas fa-comments"></i> Group Chat
+                    </h3>
+                    <div class="coming-soon-section">
+                        <i class="fas fa-comment-dots"></i>
+                        <h3>Group Chat Coming Soon!</h3>
+                        <p>Chat with your travel buddies in real-time</p>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="trip-actions">
+                    ${actionButton}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// LEAVE TRIP
+window.leaveTrip = async function(tripId) {
+    if (!confirm('Are you sure you want to leave this trip?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const updatedMembers = (tripData.members || []).filter(id => id !== currentUser.uid);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            members: updatedMembers,
+            memberCount: updatedMembers.length
+        }, { merge: true });
+        
+        // Update user
+        await setDoc(doc(db, "users", currentUser.uid), {
+            ...userData,
+            tripsJoined: Math.max(0, (userData.tripsJoined || 1) - 1)
+        }, { merge: true });
+        
+        alert('✅ You left the trip.');
+        showPage('explore');
+        
+    } catch (error) {
+        console.error('Leave error:', error);
+        alert('Failed to leave trip.');
+    }
+};
+
+console.log('🎯 Trip Details Page Loaded!');
