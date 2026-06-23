@@ -843,3 +843,317 @@ window.copyInviteLink = function() {
 };
 
 console.log('📊 Dashboard with Firebase Loaded Successfully!');
+
+// ============================
+// MY TRIPS FUNCTIONALITY
+// ============================
+
+let myCreatedTrips = [];
+let myJoinedTrips = [];
+let myPendingRequests = [];
+
+async function loadMyTrips() {
+    if (!currentUser) return;
+    
+    try {
+        const tripsSnapshot = await getDocs(collection(db, "trips"));
+        myCreatedTrips = [];
+        myJoinedTrips = [];
+        myPendingRequests = [];
+        let totalRequests = 0;
+        
+        tripsSnapshot.forEach((doc) => {
+            const trip = { id: doc.id, ...doc.data() };
+            
+            // Created by me
+            if (trip.createdBy === currentUser.uid && trip.status === 'approved') {
+                myCreatedTrips.push(trip);
+                
+                // Count join requests
+                if (trip.joinRequests && trip.joinRequests.length > 0) {
+                    totalRequests += trip.joinRequests.length;
+                    trip.joinRequests.forEach(req => {
+                        myPendingRequests.push({ ...req, tripId: trip.id, tripName: trip.name });
+                    });
+                }
+            }
+            
+            // Joined trips
+            if (trip.members && trip.members.includes(currentUser.uid) && trip.createdBy !== currentUser.uid && trip.status === 'approved') {
+                myJoinedTrips.push(trip);
+            }
+        });
+        
+        // Update badges
+        document.getElementById('createdCount').textContent = myCreatedTrips.length;
+        document.getElementById('joinedCount').textContent = myJoinedTrips.length;
+        document.getElementById('requestsCount').textContent = totalRequests;
+        
+        const sidebarBadge = document.getElementById('myTripsBadge');
+        if (sidebarBadge) {
+            if (totalRequests > 0) {
+                sidebarBadge.textContent = totalRequests;
+                sidebarBadge.style.display = 'inline-block';
+            } else {
+                sidebarBadge.style.display = 'none';
+            }
+        }
+        
+        // Show active tab
+        const activeTab = document.querySelector('.trip-tab-btn.active')?.dataset.tab || 'created';
+        displayMyTripsTab(activeTab);
+        
+    } catch (error) {
+        console.error('Error loading my trips:', error);
+    }
+}
+
+function displayMyTripsTab(tab) {
+    const container = document.getElementById('myTripsContent');
+    if (!container) return;
+    
+    if (tab === 'created') {
+        displayCreatedTrips(container);
+    } else if (tab === 'joined') {
+        displayJoinedTrips(container);
+    } else if (tab === 'requests') {
+        displayJoinRequests(container);
+    }
+}
+
+function displayCreatedTrips(container) {
+    if (myCreatedTrips.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-crown"></i></div>
+                <h2>No Trips Created Yet</h2>
+                <p>Create your first trip to start your adventure!</p>
+                <div class="empty-actions">
+                    <button class="btn-empty-primary" onclick="showPage('create')">
+                        <i class="fas fa-plus-circle"></i> Create Trip
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = myCreatedTrips.map(trip => createMyTripCard(trip, 'created')).join('');
+}
+
+function displayJoinedTrips(container) {
+    if (myJoinedTrips.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-suitcase"></i></div>
+                <h2>No Trips Joined Yet</h2>
+                <p>Explore trips and join exciting adventures!</p>
+                <div class="empty-actions">
+                    <button class="btn-empty-primary" onclick="showPage('explore')">
+                        <i class="fas fa-compass"></i> Explore Trips
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = myJoinedTrips.map(trip => createMyTripCard(trip, 'joined')).join('');
+}
+
+function displayJoinRequests(container) {
+    if (myPendingRequests.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-check-circle"></i></div>
+                <h2>No Pending Requests</h2>
+                <p>All caught up! Join requests will appear here.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = myPendingRequests.map(req => `
+        <div class="request-card">
+            <div class="request-header">
+                <div class="request-avatar">${(req.userName || 'U')[0].toUpperCase()}</div>
+                <div class="request-info">
+                    <h3>${req.userName}</h3>
+                    <p><i class="fas fa-university"></i> ${req.userCollege || 'Unknown'}</p>
+                    <p><i class="fas fa-envelope"></i> ${req.userEmail}</p>
+                </div>
+            </div>
+            <div class="request-trip-info">
+                <i class="fas fa-suitcase"></i> Wants to join: <strong>${req.tripName}</strong>
+            </div>
+            <div class="request-actions">
+                <button class="btn-accept" onclick="acceptJoinRequest('${req.tripId}', '${req.userId}')">
+                    <i class="fas fa-check"></i> Accept
+                </button>
+                <button class="btn-decline" onclick="declineJoinRequest('${req.tripId}', '${req.userId}')">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function createMyTripCard(trip, type) {
+    const startDate = new Date(trip.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const endDate = new Date(trip.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const spotsLeft = trip.maxMembers - (trip.memberCount || 1);
+    
+    const firstType = trip.types?.[0] || 'adventure';
+    const gradients = {
+        mountains: 'linear-gradient(135deg, #667eea, #764ba2)',
+        beach: 'linear-gradient(135deg, #f093fb, #f5576c)',
+        camping: 'linear-gradient(135deg, #4facfe, #00f2fe)',
+        party: 'linear-gradient(135deg, #fa709a, #fee140)',
+        adventure: 'linear-gradient(135deg, #30cfd0, #330867)',
+        spiritual: 'linear-gradient(135deg, #a8edea, #fed6e3)',
+        heritage: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
+        food: 'linear-gradient(135deg, #ff9a9e, #fad0c4)'
+    };
+    
+    const pendingRequests = trip.joinRequests?.length || 0;
+    
+    return `
+        <div class="my-trip-card">
+            <div class="my-trip-banner" style="background: ${gradients[firstType]};">
+                <h3>${trip.name}</h3>
+                <span class="my-trip-status">
+                    ${type === 'created' ? '👑 Created' : '✅ Joined'}
+                </span>
+            </div>
+            <div class="my-trip-info">
+                <div class="my-trip-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> ${trip.destination}</span>
+                    <span><i class="fas fa-calendar"></i> ${startDate} - ${endDate}</span>
+                    <span><i class="fas fa-users"></i> ${trip.memberCount || 1}/${trip.maxMembers} members</span>
+                    <span><i class="fas fa-rupee-sign"></i> ${trip.budget}/person</span>
+                </div>
+                ${type === 'created' && pendingRequests > 0 ? `
+                    <div class="pending-requests-info">
+                        <i class="fas fa-bell"></i> ${pendingRequests} pending join request(s) - Check "Join Requests" tab!
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// ============================
+// ACCEPT JOIN REQUEST
+// ============================
+window.acceptJoinRequest = async function(tripId, userId) {
+    if (!confirm('Accept this user to join your trip?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        // Check if spots available
+        const currentMembers = tripData.members || [];
+        if (currentMembers.length >= tripData.maxMembers) {
+            alert('❌ Trip is full! Cannot accept more members.');
+            return;
+        }
+        
+        // Add to members
+        const updatedMembers = [...currentMembers, userId];
+        
+        // Remove from join requests
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            members: updatedMembers,
+            memberCount: updatedMembers.length,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        // Update user's trips joined count
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        const userInfo = userSnap.data();
+        await setDoc(userRef, {
+            ...userInfo,
+            tripsJoined: (userInfo.tripsJoined || 0) + 1
+        }, { merge: true });
+        
+        alert('✅ User accepted! They are now part of your trip.');
+        loadMyTrips();
+        
+    } catch (error) {
+        console.error('Accept error:', error);
+        alert('❌ Failed to accept. Try again!');
+    }
+};
+
+// ============================
+// DECLINE JOIN REQUEST
+// ============================
+window.declineJoinRequest = async function(tripId, userId) {
+    if (!confirm('Decline this join request?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        // Remove from join requests
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        alert('Request declined.');
+        loadMyTrips();
+        
+    } catch (error) {
+        console.error('Decline error:', error);
+        alert('Failed to decline.');
+    }
+};
+
+// ============================
+// TAB SWITCHING
+// ============================
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const tabBtns = document.querySelectorAll('.trip-tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                displayMyTripsTab(btn.dataset.tab);
+            });
+        });
+    }, 1500);
+});
+
+// Load my trips when page is shown
+const originalShowPageFunc = window.showPage;
+window.showPage = function(pageName) {
+    originalShowPageFunc(pageName);
+    if (pageName === 'my-trips') {
+        loadMyTrips();
+    }
+};
+
+// Auto-load on page load
+setTimeout(() => {
+    loadMyTrips();
+}, 3000);
+
+// Refresh every 30 seconds for new requests
+setInterval(() => {
+    if (currentUser) {
+        loadMyTrips();
+    }
+}, 30000);
+
+console.log('🎒 My Trips System Loaded!');
