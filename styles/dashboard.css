@@ -1914,3 +1914,343 @@ body {
     text-align: center;
     padding: 60px 20px;
 }
+/* ============================
+   MY TRIPS - BEAUTIFUL DESIGN
+   ============================ */
+
+.my-trips-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    padding: 5px 5px 15px 5px;
+}
+
+.my-trips-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.my-trips-tabs::-webkit-scrollbar-thumb {
+    background: var(--accent-1);
+    border-radius: 10px;
+}
+
+.trip-tab-btn {
+    padding: 14px 24px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    color: var(--text-secondary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.trip-tab-btn:hover {
+    color: white;
+    border-color: var(--accent-1);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(108, 99, 255, 0.2);
+    background: rgba(108, 99, 255, 0.1);
+}
+
+.trip-tab-btn i {
+    font-size: 1.1rem;
+}
+
+.trip-tab-btn.active {
+    background: var(--gradient-1);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.4);
+}
+
+.tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+}
+
+.trip-tab-btn:not(.active) .tab-count {
+    background: var(--accent-2);
+    color: white;
+}
+
+.trips-tab-content {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-trip-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.my-trip-card:hover {
+    border-color: var(--accent-1);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.my-trip-banner {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 25px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.my-trip-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+}
+
+.my-trip-banner h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    z-index: 1;
+}
+
+.my-trip-status {
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.my-trip-info {
+    padding: 20px 25px;
+}
+
+.my-trip-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.my-trip-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.my-trip-meta i {
+    color: var(--accent-1);
+    font-size: 0.85rem;
+}
+
+.pending-requests-info {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.15));
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #ffd700;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.request-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.request-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gradient-1);
+}
+
+.request-card:hover {
+    border-color: var(--accent-1);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.2);
+}
+
+.request-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.request-avatar {
+    width: 60px;
+    height: 60px;
+    background: var(--gradient-1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.request-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.request-info p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.request-info i {
+    color: var(--accent-1);
+    width: 14px;
+}
+
+.request-trip-info {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 101, 132, 0.1));
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.request-trip-info i {
+    color: var(--accent-1);
+    font-size: 1.1rem;
+}
+
+.request-trip-info strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.request-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-accept,
+.btn-decline {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-accept {
+    background: linear-gradient(135deg, #00cc44, #00aa33);
+    color: white;
+    box-shadow: 0 5px 15px rgba(0, 204, 68, 0.2);
+}
+
+.btn-accept:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 204, 68, 0.4);
+}
+
+.btn-decline {
+    background: transparent;
+    color: #ff4444;
+    border: 2px solid #ff4444;
+}
+
+.btn-decline:hover {
+    background: #ff4444;
+    color: white;
+    transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .trip-tab-btn {
+        padding: 12px 16px;
+        font-size: 0.8rem;
+    }
+    
+    .my-trip-banner {
+        padding: 20px;
+        height: 100px;
+    }
+    
+    .my-trip-banner h3 {
+        font-size: 1.1rem;
+    }
+    
+    .request-actions {
+        flex-direction: column;
+    }
+}
