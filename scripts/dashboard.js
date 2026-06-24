@@ -1439,6 +1439,21 @@ async function displayTripDetails(trip) {
     const isUserMember = trip.members && trip.members.includes(currentUser?.uid);
     const isUserCreator = trip.createdBy === currentUser?.uid;
     const hasRequested = trip.joinRequests?.some(req => req.userId === currentUser?.uid);
+
+    // Load creator's latest profile pic
+if (!trip.creatorProfilePic && trip.createdBy) {
+    try {
+        const creatorSnap = await getDoc(doc(db, "users", trip.createdBy));
+        if (creatorSnap.exists()) {
+            const creatorData = creatorSnap.data();
+            if (creatorData.profilePic) {
+                trip.creatorProfilePic = creatorData.profilePic;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading creator pic:', e);
+    }
+}
     
     // Get gradient
     const firstType = trip.types?.[0] || 'adventure';
@@ -1465,28 +1480,34 @@ async function displayTripDetails(trip) {
     };
     
     // Load members data
-    let membersHTML = '';
-    if (trip.members && trip.members.length > 0) {
-        for (const memberId of trip.members) {
-            try {
-                const memberSnap = await getDoc(doc(db, "users", memberId));
-                if (memberSnap.exists()) {
-                    const member = memberSnap.data();
-                    const isCreator = memberId === trip.createdBy;
-                    membersHTML += `
-                        <div class="member-card">
-                            <div class="member-avatar">${(member.fullName || 'U')[0].toUpperCase()}</div>
-                            <div class="member-name">${member.fullName || 'User'}</div>
-                            <div class="member-college">${member.college || 'Unknown'}</div>
-                            ${isCreator ? '<div class="member-badge">👑 Creator</div>' : ''}
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                console.error('Error loading member:', e);
+let membersHTML = '';
+if (trip.members && trip.members.length > 0) {
+    for (const memberId of trip.members) {
+        try {
+            const memberSnap = await getDoc(doc(db, "users", memberId));
+            if (memberSnap.exists()) {
+                const member = memberSnap.data();
+                const isCreator = memberId === trip.createdBy;
+                
+                // Show profile pic if exists, else initial
+                const avatarContent = member.profilePic 
+                    ? `<img src="${member.profilePic}" alt="${member.fullName}">` 
+                    : (member.fullName || 'U')[0].toUpperCase();
+                
+                membersHTML += `
+                    <div class="member-card">
+                        <div class="member-avatar ${member.profilePic ? 'has-pic' : ''}">${avatarContent}</div>
+                        <div class="member-name">${member.fullName || 'User'}</div>
+                        <div class="member-college">${member.college || 'Unknown'}</div>
+                        ${isCreator ? '<div class="member-badge">👑 Creator</div>' : ''}
+                    </div>
+                `;
             }
+        } catch (e) {
+            console.error('Error loading member:', e);
         }
     }
+}
     
     // Action button
     let actionButton = '';
@@ -1617,18 +1638,20 @@ async function displayTripDetails(trip) {
                 ` : ''}
                 
                 <!-- Creator -->
-                <div class="trip-section">
-                    <h3 class="trip-section-title">
-                        <i class="fas fa-user-tie"></i> Trip Organizer
-                    </h3>
-                    <div class="trip-creator-box">
-                        <div class="creator-avatar-big">${(trip.creatorName || 'U')[0].toUpperCase()}</div>
-                        <div class="creator-info-big">
-                            <h4>${trip.creatorName} <i class="fas fa-crown"></i></h4>
-                            <p><i class="fas fa-university"></i> ${trip.creatorCollege}</p>
-                        </div>
-                    </div>
-                </div>
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-user-tie"></i> Trip Organizer
+    </h3>
+    <div class="trip-creator-box">
+        <div class="creator-avatar-big ${trip.creatorProfilePic ? 'has-pic' : ''}" id="creatorAvatar-${trip.id}">
+            ${trip.creatorProfilePic ? `<img src="${trip.creatorProfilePic}" alt="${trip.creatorName}">` : (trip.creatorName || 'U')[0].toUpperCase()}
+        </div>
+        <div class="creator-info-big">
+            <h4>${trip.creatorName} <i class="fas fa-crown"></i></h4>
+            <p><i class="fas fa-university"></i> ${trip.creatorCollege}</p>
+        </div>
+    </div>
+</div>
                 
                 <!-- Members -->
                 <div class="trip-section">
@@ -2255,7 +2278,7 @@ async function loadChatMessages(tripId) {
     }
 }
 
-function displayChatMessages(tripId, messages) {
+async function displayChatMessages(tripId, messages) {
     const container = document.getElementById(`chatMessages-${tripId}`);
     if (!container) return;
     
@@ -2270,15 +2293,30 @@ function displayChatMessages(tripId, messages) {
         return;
     }
     
-    container.innerHTML = messages.map(msg => createChatBubble(msg)).join('');
-    
-    // Scroll to bottom
+    // Create all bubbles (await each)
+    const bubbleHTMLs = await Promise.all(messages.map(msg => createChatBubble(msg)));
+    container.innerHTML = bubbleHTMLs.join('');
     container.scrollTop = container.scrollHeight;
 }
 
-function createChatBubble(msg) {
+async function createChatBubble(msg) {
     const isMine = msg.senderId === currentUser?.uid;
     const initial = (msg.senderName || 'U')[0].toUpperCase();
+    
+    // Load sender's profile pic
+    let senderPic = msg.senderPic;
+    if (!senderPic && msg.senderId) {
+        try {
+            const senderSnap = await getDoc(doc(db, "users", msg.senderId));
+            if (senderSnap.exists()) {
+                senderPic = senderSnap.data().profilePic;
+            }
+        } catch (e) {}
+    }
+    
+    const avatarContent = senderPic 
+        ? `<img src="${senderPic}" alt="${msg.senderName}">`
+        : initial;
     
     // Format time
     let timeStr = 'Just now';
@@ -2286,17 +2324,12 @@ function createChatBubble(msg) {
         try {
             const date = msg.timestamp.toDate();
             const now = new Date();
-            const diff = Math.floor((now - date) / 1000); // seconds
+            const diff = Math.floor((now - date) / 1000);
             
-            if (diff < 60) {
-                timeStr = 'Just now';
-            } else if (diff < 3600) {
-                timeStr = `${Math.floor(diff / 60)}m ago`;
-            } else if (diff < 86400) {
-                timeStr = `${Math.floor(diff / 3600)}h ago`;
-            } else {
-                timeStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-            }
+            if (diff < 60) timeStr = 'Just now';
+            else if (diff < 3600) timeStr = `${Math.floor(diff / 60)}m ago`;
+            else if (diff < 86400) timeStr = `${Math.floor(diff / 3600)}h ago`;
+            else timeStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
         } catch (e) {
             timeStr = 'Just now';
         }
@@ -2309,13 +2342,13 @@ function createChatBubble(msg) {
                     <div class="chat-text">${escapeHtml(msg.text)}</div>
                     <div class="chat-time">${timeStr}</div>
                 </div>
-                <div class="chat-avatar mine">${initial}</div>
+                <div class="chat-avatar mine ${senderPic ? 'has-pic' : ''}">${avatarContent}</div>
             </div>
         `;
     } else {
         return `
             <div class="chat-bubble-row">
-                <div class="chat-avatar">${initial}</div>
+                <div class="chat-avatar ${senderPic ? 'has-pic' : ''}">${avatarContent}</div>
                 <div class="chat-bubble">
                     <div class="chat-sender">${msg.senderName}</div>
                     <div class="chat-text">${escapeHtml(msg.text)}</div>
