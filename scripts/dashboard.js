@@ -2671,3 +2671,287 @@ window.sendAIMessage = function() {
 };
 
 console.log('🤖 AI Trip Planner Loaded!');
+
+// ============================
+// NOTIFICATIONS SYSTEM
+// ============================
+
+let allNotifications = [];
+
+window.toggleNotifications = function() {
+    const dropdown = document.getElementById('notificationsDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+        
+        // Close when clicking outside
+        if (dropdown.classList.contains('active')) {
+            setTimeout(() => {
+                document.addEventListener('click', closeNotifOnOutsideClick);
+            }, 100);
+        } else {
+            document.removeEventListener('click', closeNotifOnOutsideClick);
+        }
+    }
+};
+
+function closeNotifOnOutsideClick(e) {
+    const dropdown = document.getElementById('notificationsDropdown');
+    const bell = document.getElementById('bellIcon');
+    
+    if (dropdown && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+        dropdown.classList.remove('active');
+        document.removeEventListener('click', closeNotifOnOutsideClick);
+    }
+}
+
+async function loadAllNotifications() {
+    if (!currentUser || !userData) return;
+    
+    try {
+        allNotifications = [];
+        const tripsSnapshot = await getDocs(collection(db, "trips"));
+        
+        tripsSnapshot.forEach((doc) => {
+            const trip = { id: doc.id, ...doc.data() };
+            
+            // Notification 1: Join requests on YOUR trips
+            if (trip.createdBy === currentUser.uid && trip.joinRequests && trip.joinRequests.length > 0) {
+                trip.joinRequests.forEach(req => {
+                    allNotifications.push({
+                        type: 'join_request',
+                        icon: 'fa-user-plus',
+                        color: 'linear-gradient(135deg, #6c63ff, #764ba2)',
+                        title: `${req.userName} wants to join`,
+                        subtitle: trip.name,
+                        meta: `${req.userCollege || 'No college'}`,
+                        timestamp: req.requestedAt,
+                        actions: [
+                            {
+                                label: '✅ Accept',
+                                class: 'btn-notif-accept',
+                                onclick: `acceptJoinRequestNotif('${trip.id}', '${req.userId}')`
+                            },
+                            {
+                                label: '❌ Reject',
+                                class: 'btn-notif-reject',
+                                onclick: `rejectJoinRequestNotif('${trip.id}', '${req.userId}')`
+                            }
+                        ],
+                        tripId: trip.id,
+                        userId: req.userId
+                    });
+                });
+            }
+            
+            // Notification 2: Your trip got approved
+            if (trip.createdBy === currentUser.uid && trip.status === 'approved' && trip.approvedAt) {
+                const approvedDate = trip.approvedAt.toDate ? trip.approvedAt.toDate() : new Date(trip.approvedAt);
+                const hoursSince = (new Date() - approvedDate) / (1000 * 60 * 60);
+                
+                if (hoursSince < 48) { // Show for 48 hours
+                    allNotifications.push({
+                        type: 'trip_approved',
+                        icon: 'fa-check-circle',
+                        color: 'linear-gradient(135deg, #00cc44, #00aa33)',
+                        title: 'Your trip was approved! 🎉',
+                        subtitle: trip.name,
+                        meta: 'Now visible to all users',
+                        timestamp: trip.approvedAt,
+                        actions: [
+                            {
+                                label: 'View Trip',
+                                class: 'btn-notif-view',
+                                onclick: `closeNotifAndOpenTrip('${trip.id}')`
+                            }
+                        ]
+                    });
+                }
+            }
+            
+            // Notification 3: You were accepted to a trip
+            if (trip.members && trip.members.includes(currentUser.uid) && trip.createdBy !== currentUser.uid) {
+                // Show for recently joined (within 24 hours)
+                // For now, just show all joined trips as notif
+            }
+        });
+        
+        // Sort by timestamp (newest first)
+        allNotifications.sort((a, b) => {
+            const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+            const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+            return bTime - aTime;
+        });
+        
+        displayNotifications();
+        updateNotifBadge();
+        
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+function displayNotifications() {
+    const container = document.getElementById('notifList');
+    if (!container) return;
+    
+    if (allNotifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-notif">
+                <i class="fas fa-bell-slash"></i>
+                <p>No notifications</p>
+                <small>You're all caught up! 🎉</small>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = allNotifications.map(notif => createNotifItem(notif)).join('');
+}
+
+function createNotifItem(notif) {
+    let timeStr = 'Just now';
+    if (notif.timestamp) {
+        try {
+            const date = notif.timestamp.toDate ? notif.timestamp.toDate() : new Date(notif.timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) timeStr = 'Just now';
+            else if (diff < 3600) timeStr = `${Math.floor(diff / 60)}m ago`;
+            else if (diff < 86400) timeStr = `${Math.floor(diff / 3600)}h ago`;
+            else timeStr = `${Math.floor(diff / 86400)}d ago`;
+        } catch (e) {}
+    }
+    
+    const actionsHTML = notif.actions ? `
+        <div class="notif-actions">
+            ${notif.actions.map(action => `
+                <button class="${action.class}" onclick="${action.onclick}">
+                    ${action.label}
+                </button>
+            `).join('')}
+        </div>
+    ` : '';
+    
+    return `
+        <div class="notif-item">
+            <div class="notif-icon" style="background: ${notif.color};">
+                <i class="fas ${notif.icon}"></i>
+            </div>
+            <div class="notif-content">
+                <h4>${notif.title}</h4>
+                <p>${notif.subtitle}</p>
+                <small>${notif.meta} • ${timeStr}</small>
+                ${actionsHTML}
+            </div>
+        </div>
+    `;
+}
+
+function updateNotifBadge() {
+    const badge = document.getElementById('notifBadge');
+    const count = document.getElementById('notifCount');
+    
+    if (badge) {
+        if (allNotifications.length > 0) {
+            badge.textContent = allNotifications.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    if (count) {
+        count.textContent = `${allNotifications.length} new`;
+    }
+}
+
+// ACCEPT FROM NOTIFICATION
+window.acceptJoinRequestNotif = async function(tripId, userId) {
+    if (!confirm('Accept this user to join your trip?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const currentMembers = tripData.members || [];
+        if (currentMembers.length >= tripData.maxMembers) {
+            alert('❌ Trip is full!');
+            return;
+        }
+        
+        const updatedMembers = [...currentMembers, userId];
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            members: updatedMembers,
+            memberCount: updatedMembers.length,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        // Update user's trips count
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        const userInfo = userSnap.data();
+        await setDoc(userRef, {
+            ...userInfo,
+            tripsJoined: (userInfo.tripsJoined || 0) + 1
+        }, { merge: true });
+        
+        alert('✅ User accepted!');
+        
+        // Reload notifications
+        loadAllNotifications();
+        
+    } catch (error) {
+        console.error('Accept error:', error);
+        alert('❌ Failed to accept.');
+    }
+};
+
+// REJECT FROM NOTIFICATION
+window.rejectJoinRequestNotif = async function(tripId, userId) {
+    if (!confirm('Reject this join request?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        alert('Request declined.');
+        loadAllNotifications();
+        
+    } catch (error) {
+        console.error('Reject error:', error);
+        alert('Failed to reject.');
+    }
+};
+
+// CLOSE NOTIF AND OPEN TRIP
+window.closeNotifAndOpenTrip = function(tripId) {
+    document.getElementById('notificationsDropdown').classList.remove('active');
+    openTripDetails(tripId);
+};
+
+// Auto-load notifications when user logs in
+setTimeout(() => {
+    loadAllNotifications();
+}, 3000);
+
+// Refresh notifications every 20 seconds
+setInterval(() => {
+    if (currentUser) {
+        loadAllNotifications();
+    }
+}, 20000);
+
+console.log('🔔 Notifications System Loaded!');
