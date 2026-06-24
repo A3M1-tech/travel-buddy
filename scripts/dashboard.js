@@ -1755,13 +1755,50 @@ ${(isUserMember || isUserCreator) ? `
 `}
                 
                 <!-- Actions -->
-                <div class="trip-actions">
-                    ${actionButton}
-                </div>
+<div class="trip-actions">
+    ${actionButton}
+    ${(userData?.role === 'super_admin' || userData?.role === 'admin') ? `
+        <button class="btn-trip-action btn-admin-delete" onclick="adminDeleteTrip('${trip.id}', '${trip.name.replace(/'/g, "\\'")}')">
+            <i class="fas fa-trash"></i> Admin Delete
+        </button>
+    ` : ''}
+</div>
             </div>
         </div>
     `;
 }
+
+// ============================
+// ADMIN DELETE TRIP (From Trip Details)
+// ============================
+window.adminDeleteTrip = async function(tripId, tripName) {
+    const confirmMsg = `🛡️ ADMIN ACTION\n\n` +
+        `Delete trip: "${tripName}"?\n\n` +
+        `This will remove:\n` +
+        `❌ All trip data\n` +
+        `❌ All messages\n` +
+        `❌ All expenses\n` +
+        `❌ All photos\n\n` +
+        `This CANNOT be undone!`;
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const reason = prompt('Reason for deletion:');
+    if (reason === null) return;
+    
+    try {
+        const { deleteDoc } = await import('./firebase-config.js');
+        await deleteDoc(doc(db, "trips", tripId));
+        
+        alert(`🗑️ Trip deleted successfully!`);
+        showPage('explore');
+        
+    } catch (error) {
+        console.error('Admin delete error:', error);
+        alert('❌ Failed to delete trip.');
+    }
+};
+
 // ============================
 // SMART SPLIT - EXPENSE SYSTEM
 // ============================

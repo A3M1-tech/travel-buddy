@@ -3718,3 +3718,15 @@ body {
         opacity: 1; /* Always visible on mobile */
     }
 }
+/* Admin Delete Trip Button (in Trip Details) */
+.btn-admin-delete {
+    background: linear-gradient(135deg, #ff4444, #cc0000) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-admin-delete:hover {
+    background: linear-gradient(135deg, #cc0000, #990000) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 68, 68, 0.4);
+}

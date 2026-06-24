@@ -148,20 +148,112 @@ function displayPendingTrips() {
     const container = document.getElementById('pendingTripsList');
     if (!container) return;
     
-    const pendingTrips = allTrips.filter(t => t.status === 'pending');
-    
-    if (pendingTrips.length === 0) {
+    if (allTrips.length === 0) {
         container.innerHTML = `
             <div class="empty-admin-state">
-                <i class="fas fa-check-circle"></i>
-                <h3>No Pending Trips! 🎉</h3>
-                <p>All caught up! New trips will appear here for review.</p>
+                <i class="fas fa-plane-slash"></i>
+                <h3>No Trips Yet!</h3>
+                <p>Trips will appear here when users create them.</p>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = pendingTrips.map(trip => createTripCard(trip)).join('');
+    // Sort: pending first, then approved, then rejected
+    const sortedTrips = [...allTrips].sort((a, b) => {
+        const order = { pending: 0, approved: 1, rejected: 2 };
+        return (order[a.status] || 3) - (order[b.status] || 3);
+    });
+    
+    container.innerHTML = sortedTrips.map(trip => createTripCardAdmin(trip)).join('');
+}
+
+function createTripCardAdmin(trip) {
+    const typesHTML = (trip.types || []).map(t => `<span class="trip-type-pill">${t}</span>`).join('');
+    
+    const startDate = new Date(trip.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const endDate = new Date(trip.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    
+    // Status badge
+    let statusBadge = '';
+    if (trip.status === 'pending') {
+        statusBadge = '<span class="trip-status-badge pending">⏳ Pending</span>';
+    } else if (trip.status === 'approved') {
+        statusBadge = '<span class="trip-status-badge approved">✅ Approved</span>';
+    } else if (trip.status === 'rejected') {
+        statusBadge = '<span class="trip-status-badge rejected">❌ Rejected</span>';
+    }
+    
+    // Action buttons based on status
+    let actionButtons = '';
+    if (trip.status === 'pending') {
+        actionButtons = `
+            <button class="btn-approve" onclick="approveTrip('${trip.id}')">
+                <i class="fas fa-check"></i> Approve
+            </button>
+            <button class="btn-reject" onclick="rejectTrip('${trip.id}')">
+                <i class="fas fa-times"></i> Reject
+            </button>
+            <button class="btn-delete-trip" onclick="deleteTrip('${trip.id}', '${trip.name}')">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        `;
+    } else {
+        actionButtons = `
+            <button class="btn-delete-trip" onclick="deleteTrip('${trip.id}', '${trip.name}')">
+                <i class="fas fa-trash"></i> Delete Trip
+            </button>
+        `;
+    }
+    
+    return `
+        <div class="trip-card-admin">
+            <div class="trip-card-header">
+                <h3>${trip.name}</h3>
+                ${statusBadge}
+            </div>
+            
+            <div class="trip-card-body">
+                <div class="trip-detail-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span><strong>Destination:</strong> ${trip.destination}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-calendar"></i>
+                    <span><strong>Dates:</strong> ${startDate} → ${endDate}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span><strong>Budget:</strong> ₹${trip.budget}/person</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-users"></i>
+                    <span><strong>Members:</strong> ${trip.memberCount || 1}/${trip.maxMembers}</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-user-circle"></i>
+                    <span><strong>Created by:</strong> ${trip.creatorName} (${trip.creatorCollege})</span>
+                </div>
+                <div class="trip-detail-row">
+                    <i class="fas fa-pen"></i>
+                    <span><strong>Description:</strong> ${trip.description}</span>
+                </div>
+                ${trip.rules && trip.rules !== 'No specific rules' ? `
+                <div class="trip-detail-row">
+                    <i class="fas fa-shield-alt"></i>
+                    <span><strong>Rules:</strong> ${trip.rules}</span>
+                </div>
+                ` : ''}
+                <div class="trip-types-display">
+                    ${typesHTML}
+                </div>
+            </div>
+            
+            <div class="trip-card-actions">
+                ${actionButtons}
+            </div>
+        </div>
+    `;
 }
 
 function createTripCard(trip) {
@@ -224,6 +316,46 @@ function createTripCard(trip) {
         </div>
     `;
 }
+
+// ============================
+// DELETE TRIP (ADMIN POWER)
+// ============================
+window.deleteTrip = async function(tripId, tripName) {
+    const confirmMsg = `⚠️ DELETE TRIP: "${tripName}"\n\n` +
+        `This will permanently remove:\n` +
+        `❌ Trip details\n` +
+        `❌ All members\n` +
+        `❌ All messages\n` +
+        `❌ All expenses\n` +
+        `❌ All memories/photos\n\n` +
+        `This action CANNOT be undone!\n\n` +
+        `Are you absolutely sure?`;
+    
+    if (!confirm(confirmMsg)) return;
+    
+    // Double confirmation for safety
+    const reason = prompt('Reason for deletion (optional but recommended):');
+    if (reason === null) return; // User cancelled
+    
+    try {
+        // Delete the trip document
+        await deleteDoc(doc(db, "trips", tripId));
+        
+        // Note: Subcollections (messages, expenses, memories) 
+        // will be auto-cleaned by Firebase eventually
+        
+        alert(`🗑️ Trip "${tripName}" deleted successfully!\n\nReason: ${reason || 'No reason provided'}`);
+        
+        // Reload trips
+        loadAllTrips();
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('❌ Failed to delete trip. Try again!');
+    }
+};
+
+console.log('🗑️ Admin Trip Delete System Loaded!');
 
 // ============================
 // APPROVE TRIP

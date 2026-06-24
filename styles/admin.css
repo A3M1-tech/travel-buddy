@@ -581,3 +581,29 @@
         flex-direction: column;
     }
 }
+/* ADMIN DELETE TRIP BUTTON */
+.btn-delete-trip {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(255, 68, 68, 0.2);
+}
+
+.btn-delete-trip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+}
+
+.btn-delete-trip:active {
+    transform: scale(0.95);
+}
