@@ -3151,3 +3151,84 @@ window.saveTripDates = async function() {
 };
 
 console.log('📅 Edit Trip Dates System Loaded!');
+// ============================
+// NOTIFICATION HELPER FUNCTIONS (FIX)
+// ============================
+
+function displayNotifications() {
+    const container = document.getElementById('notifList');
+    if (!container) return;
+    
+    if (allNotifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-notif">
+                <i class="fas fa-bell-slash"></i>
+                <p>No notifications</p>
+                <small>You're all caught up! 🎉</small>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = allNotifications.map(notif => createNotifItem(notif)).join('');
+}
+
+function createNotifItem(notif) {
+    let timeStr = 'Just now';
+    if (notif.timestamp) {
+        try {
+            const date = notif.timestamp.toDate ? notif.timestamp.toDate() : new Date(notif.timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) timeStr = 'Just now';
+            else if (diff < 3600) timeStr = `${Math.floor(diff / 60)}m ago`;
+            else if (diff < 86400) timeStr = `${Math.floor(diff / 3600)}h ago`;
+            else timeStr = `${Math.floor(diff / 86400)}d ago`;
+        } catch (e) {}
+    }
+    
+    const actionsHTML = notif.actions ? `
+        <div class="notif-actions">
+            ${notif.actions.map(action => `
+                <button class="${action.class}" onclick="${action.onclick}">
+                    ${action.label}
+                </button>
+            `).join('')}
+        </div>
+    ` : '';
+    
+    return `
+        <div class="notif-item">
+            <div class="notif-icon" style="background: ${notif.color};">
+                <i class="fas ${notif.icon}"></i>
+            </div>
+            <div class="notif-content">
+                <h4>${notif.title}</h4>
+                <p>${notif.subtitle}</p>
+                <small>${notif.meta} • ${timeStr}</small>
+                ${actionsHTML}
+            </div>
+        </div>
+    `;
+}
+
+function updateNotifBadge() {
+    const badge = document.getElementById('notifBadge');
+    const count = document.getElementById('notifCount');
+    
+    if (badge) {
+        if (allNotifications.length > 0) {
+            badge.textContent = allNotifications.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    if (count) {
+        count.textContent = `${allNotifications.length} new`;
+    }
+}
+
+console.log('🔔 Notification Helpers Loaded!');
