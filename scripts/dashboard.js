@@ -1347,12 +1347,31 @@ setTimeout(() => {
     loadMyTrips();
 }, 3000);
 
-// Refresh every 30 seconds for new requests
+// Refresh notifications every 10 seconds (faster!)
 setInterval(() => {
     if (currentUser) {
-        loadMyTrips();
+        loadAllNotifications();
     }
-}, 30000);
+}, 10000);
+
+// Also refresh on focus
+window.addEventListener('focus', () => {
+    if (currentUser) {
+        console.log('Window focused - refreshing notifications');
+        loadAllNotifications();
+    }
+});
+
+// Refresh when clicking bell
+const bellRefresh = document.getElementById('bellIcon');
+if (bellRefresh) {
+    bellRefresh.addEventListener('click', () => {
+        if (currentUser) {
+            console.log('Bell clicked - refreshing notifications');
+            loadAllNotifications();
+        }
+    });
+}
 
 console.log('🎒 My Trips System Loaded!');
 
