@@ -2384,3 +2384,290 @@ window.leaveTrip = async function(tripId) {
 };
 
 console.log('🎯 Trip Details Page Loaded!');
+
+// ============================
+// AI TRIP PLANNER BOT
+// ============================
+
+// Knowledge base for AI responses
+const aiKnowledge = {
+    destinations: {
+        budget: {
+            low: ['Pondicherry', 'Hampi', 'Pushkar', 'Rishikesh', 'McLeodganj', 'Gokarna', 'Varkala'],
+            mid: ['Goa', 'Manali', 'Munnar', 'Udaipur', 'Jaisalmer', 'Coorg', 'Darjeeling'],
+            high: ['Ladakh', 'Andaman', 'Spiti Valley', 'Kashmir', 'Sikkim', 'Meghalaya']
+        },
+        beach: ['Goa', 'Andaman', 'Pondicherry', 'Gokarna', 'Varkala', 'Diu', 'Tarkarli'],
+        mountains: ['Manali', 'Ladakh', 'Spiti Valley', 'Sikkim', 'Darjeeling', 'McLeodganj', 'Mussoorie', 'Nainital'],
+        adventure: ['Rishikesh', 'Ladakh', 'Spiti Valley', 'Bir Billing', 'Auli', 'Coorg'],
+        spiritual: ['Rishikesh', 'Varanasi', 'Bodh Gaya', 'Pushkar', 'Tirupati', 'Amritsar'],
+        party: ['Goa', 'Mumbai', 'Bangalore', 'Delhi', 'Pune'],
+        weekend: {
+            mumbai: ['Lonavala', 'Mahabaleshwar', 'Alibaug', 'Igatpuri', 'Matheran', 'Karjat'],
+            delhi: ['Rishikesh', 'Mussoorie', 'Nainital', 'Jaipur', 'Agra', 'Neemrana'],
+            bangalore: ['Coorg', 'Chikmagalur', 'Mysore', 'Wayanad', 'Pondicherry', 'Hampi']
+        }
+    }
+};
+
+// AI Response Generator
+function generateAIResponse(userMessage) {
+    const msg = userMessage.toLowerCase();
+    
+    // Budget-based suggestions
+    if (msg.includes('budget') || msg.includes('cheap') || msg.includes('₹') || msg.match(/\d{4,}/)) {
+        const numbers = msg.match(/\d+/g);
+        const budget = numbers ? parseInt(numbers[0]) : 5000;
+        
+        let category, suggestions;
+        if (budget < 5000) {
+            category = 'budget-friendly';
+            suggestions = aiKnowledge.destinations.budget.low;
+        } else if (budget < 10000) {
+            category = 'mid-range';
+            suggestions = aiKnowledge.destinations.budget.mid;
+        } else {
+            category = 'premium';
+            suggestions = aiKnowledge.destinations.budget.high;
+        }
+        
+        return `💰 <strong>Great budget of ₹${budget}!</strong><br><br>
+        For a <strong>${category}</strong> trip, here are perfect destinations:<br><br>
+        ${suggestions.slice(0, 5).map(d => `🌟 <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>💡 Budget Breakdown for ₹${budget}:</strong><br>
+        🚌 Transport: ₹${Math.round(budget * 0.3).toLocaleString('en-IN')}<br>
+        🏨 Stay: ₹${Math.round(budget * 0.35).toLocaleString('en-IN')}<br>
+        🍕 Food: ₹${Math.round(budget * 0.20).toLocaleString('en-IN')}<br>
+        🎢 Activities: ₹${Math.round(budget * 0.15).toLocaleString('en-IN')}<br><br>
+        Want me to suggest specific itinerary? Just ask! 🚀`;
+    }
+    
+    // Beach trips
+    if (msg.includes('beach') || msg.includes('sea') || msg.includes('coast')) {
+        return `🏖️ <strong>Beach Lover! Awesome choice!</strong><br><br>
+        Top beach destinations in India:<br><br>
+        ${aiKnowledge.destinations.beach.map(d => `🌊 <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>🌟 My Top Pick:</strong> Goa for nightlife, Andaman for pristine beaches!<br><br>
+        💡 <strong>Best time:</strong> November to February<br>
+        💰 <strong>Budget:</strong> ₹6,000-15,000 (3-4 days)<br>
+        🎒 <strong>Pack:</strong> Sunscreen, swimwear, light cottons!`;
+    }
+    
+    // Mountain trips
+    if (msg.includes('mountain') || msg.includes('hill') || msg.includes('snow') || msg.includes('trek')) {
+        return `🏔️ <strong>Mountains calling? Let's go!</strong><br><br>
+        Best mountain destinations:<br><br>
+        ${aiKnowledge.destinations.mountains.map(d => `⛰️ <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>🌟 Hot Picks:</strong><br>
+        ❄️ <strong>Manali</strong> - Snow + Adventure (₹7-10k)<br>
+        🌄 <strong>Ladakh</strong> - Bucket list trip (₹15-25k)<br>
+        🍃 <strong>Spiti</strong> - Offbeat paradise (₹10-15k)<br><br>
+        💡 <strong>Best time:</strong> Oct-Feb (snow), Mar-Jun (pleasant)<br>
+        🎒 <strong>Pack:</strong> Warm clothes, gloves, trekking shoes!`;
+    }
+    
+    // Adventure
+    if (msg.includes('adventure') || msg.includes('thrill') || msg.includes('extreme')) {
+        return `🎢 <strong>Adventure Junkie! Let's GO!</strong><br><br>
+        Top adventure destinations:<br><br>
+        ${aiKnowledge.destinations.adventure.map(d => `🏃 <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>🌟 Activities You'll LOVE:</strong><br>
+        🪂 Paragliding at <strong>Bir Billing</strong><br>
+        🚣 River Rafting at <strong>Rishikesh</strong><br>
+        🚵 Mountain Biking in <strong>Ladakh</strong><br>
+        🧗 Rock Climbing at <strong>Hampi</strong><br>
+        ⛷️ Skiing at <strong>Auli</strong><br><br>
+        💡 Most adventures: ₹500-3000 per activity<br>
+        🛡️ Always book with verified operators!`;
+    }
+    
+    // Spiritual
+    if (msg.includes('spiritual') || msg.includes('peace') || msg.includes('temple') || msg.includes('yoga')) {
+        return `🧘 <strong>Seeking peace? Perfect choice!</strong><br><br>
+        Spiritual destinations:<br><br>
+        ${aiKnowledge.destinations.spiritual.map(d => `🕉️ <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>🌟 My Recommendations:</strong><br>
+        🧘 <strong>Rishikesh</strong> - Yoga capital of world<br>
+        🕉️ <strong>Varanasi</strong> - Spiritual heart of India<br>
+        🌸 <strong>Bodh Gaya</strong> - Buddha's enlightenment<br><br>
+        💡 <strong>Best time:</strong> October to March<br>
+        🎒 <strong>Pack:</strong> Modest clothes, comfortable shoes`;
+    }
+    
+    // Party / Nightlife
+    if (msg.includes('party') || msg.includes('club') || msg.includes('night')) {
+        return `🎉 <strong>Party time! Let's have FUN!</strong><br><br>
+        Top party destinations:<br><br>
+        ${aiKnowledge.destinations.party.map(d => `🎊 <strong>${d}</strong>`).join('<br>')}<br><br>
+        <strong>🌟 Best for:</strong><br>
+        🏖️ <strong>Goa</strong> - Beach parties, EDM<br>
+        🌆 <strong>Mumbai</strong> - Rooftop bars, clubs<br>
+        🎵 <strong>Bangalore</strong> - Live music, pubs<br><br>
+        💡 <strong>Pro tip:</strong> Friday-Sunday best for parties!<br>
+        💰 Budget: ₹2000-5000/night for clubs`;
+    }
+    
+    // Packing tips
+    if (msg.includes('pack') || msg.includes('what to bring') || msg.includes('what to take')) {
+        return `🎒 <strong>Smart Packing Guide!</strong><br><br>
+        <strong>🌟 Essentials (Always pack):</strong><br>
+        📱 Phone + Charger + Power bank<br>
+        💳 ID Cards + Cash + Card<br>
+        💊 Medicines + First-aid kit<br>
+        🧴 Toiletries + Sanitizer<br>
+        🧣 Light jacket (always!)<br><br>
+        <strong>❄️ For Mountains/Cold:</strong><br>
+        🧥 Heavy jacket, thermals, gloves<br>
+        🧦 Wool socks, beanie<br>
+        🥾 Trekking shoes<br><br>
+        <strong>🏖️ For Beach:</strong><br>
+        👕 Light cotton clothes<br>
+        🩳 Swimwear, sunscreen<br>
+        👡 Flip-flops, hat, sunglasses<br><br>
+        💡 <strong>Golden Rule:</strong> Pack light, you'll thank yourself!`;
+    }
+    
+    // Weekend trips
+    if (msg.includes('weekend') || msg.includes('2 days') || msg.includes('short')) {
+        let city = 'mumbai';
+        if (msg.includes('delhi')) city = 'delhi';
+        if (msg.includes('bangalore') || msg.includes('bengaluru')) city = 'bangalore';
+        
+        const trips = aiKnowledge.destinations.weekend[city];
+        return `🚗 <strong>Quick Weekend Escape!</strong><br><br>
+        Best weekend trips from ${city.charAt(0).toUpperCase() + city.slice(1)}:<br><br>
+        ${trips.map(d => `🌟 <strong>${d}</strong>`).join('<br>')}<br><br>
+        💡 <strong>Tips:</strong><br>
+        ⏰ Leave Friday evening<br>
+        🚌 Book transport in advance<br>
+        💰 Budget ₹3000-6000 per person<br>
+        📅 Return by Sunday evening<br><br>
+        Want detailed itinerary for any? Just ask! 😊`;
+    }
+    
+    // Safety
+    if (msg.includes('safe') || msg.includes('safety') || msg.includes('solo')) {
+        return `🛡️ <strong>Safety First! Smart traveller!</strong><br><br>
+        <strong>🌟 Essential Safety Tips:</strong><br><br>
+        📱 <strong>Always:</strong><br>
+        ✅ Share location with family<br>
+        ✅ Keep emergency contacts<br>
+        ✅ Save local police number<br>
+        ✅ Check weather before trip<br><br>
+        💰 <strong>Money:</strong><br>
+        ✅ Carry mixed payment options<br>
+        ✅ Don't carry all cash in one place<br>
+        ✅ Use UPI/cards when possible<br><br>
+        🏨 <strong>Stay:</strong><br>
+        ✅ Book verified hostels/hotels<br>
+        ✅ Read reviews before booking<br>
+        ✅ Reach destination before dark<br><br>
+        👥 <strong>Travel:</strong><br>
+        ✅ Use TravelBuddy to find groups! 😊<br>
+        ✅ Trust your gut feeling<br>
+        ✅ Stay aware of surroundings<br><br>
+        🆘 <strong>Emergency:</strong> 112 (India)`;
+    }
+    
+    // Best time / when to go
+    if (msg.includes('best time') || msg.includes('when') || msg.includes('weather')) {
+        return `📅 <strong>Best Travel Seasons in India:</strong><br><br>
+        ❄️ <strong>October - February (BEST overall):</strong><br>
+        Most of India is perfect! Goa, Rajasthan, South India<br><br>
+        🌸 <strong>March - May (Summer):</strong><br>
+        Head to hills! Manali, Shimla, Darjeeling, Ladakh<br><br>
+        🌧️ <strong>June - September (Monsoon):</strong><br>
+        Romantic: Kerala, Goa beaches, Mahabaleshwar<br><br>
+        <strong>🌟 Special:</strong><br>
+        ❄️ Snow in Manali: Dec-Feb<br>
+        🌸 Cherry Blossom Shillong: Nov<br>
+        🐅 Tiger spotting: Oct-April<br>
+        🎉 Festivals: Diwali (Oct/Nov), Holi (Mar)`;
+    }
+    
+    // Default - General help
+    return `🤔 <strong>Interesting question!</strong><br><br>
+    I can help you with:<br><br>
+    💰 <strong>Budget trips</strong> - "I have ₹X for Y days"<br>
+    🏖️ <strong>Beach destinations</strong><br>
+    🏔️ <strong>Mountain trips</strong><br>
+    🎢 <strong>Adventure activities</strong><br>
+    🧘 <strong>Spiritual journeys</strong><br>
+    🎉 <strong>Party destinations</strong><br>
+    🎒 <strong>Packing tips</strong><br>
+    🚗 <strong>Weekend getaways</strong><br>
+    🛡️ <strong>Safety advice</strong><br>
+    📅 <strong>Best time to visit</strong><br><br>
+    Try asking something specific! 😊<br>
+    Or click a suggestion below 👇`;
+}
+
+window.askAI = function(question) {
+    document.getElementById('aiInput').value = question;
+    sendAIMessage();
+};
+
+window.sendAIMessage = function() {
+    const input = document.getElementById('aiInput');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    const messagesContainer = document.getElementById('aiMessages');
+    const suggestionsContainer = document.getElementById('aiSuggestions');
+    
+    // Hide suggestions after first message
+    if (suggestionsContainer) suggestionsContainer.style.display = 'none';
+    
+    // Add user message
+    const userBubble = document.createElement('div');
+    userBubble.className = 'ai-message ai-user';
+    userBubble.innerHTML = `
+        <div class="ai-bubble user">
+            <p>${escapeHtml(message)}</p>
+        </div>
+        <div class="ai-avatar-user">${(userData?.fullName || 'U')[0].toUpperCase()}</div>
+    `;
+    messagesContainer.appendChild(userBubble);
+    
+    // Clear input
+    input.value = '';
+    
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'ai-message ai-bot';
+    typingIndicator.id = 'typingIndicator';
+    typingIndicator.innerHTML = `
+        <div class="ai-avatar-bot">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="ai-bubble typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        </div>
+    `;
+    messagesContainer.appendChild(typingIndicator);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Generate response after delay (simulating thinking)
+    setTimeout(() => {
+        document.getElementById('typingIndicator')?.remove();
+        
+        const response = generateAIResponse(message);
+        
+        const botBubble = document.createElement('div');
+        botBubble.className = 'ai-message ai-bot';
+        botBubble.innerHTML = `
+            <div class="ai-avatar-bot">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="ai-bubble">
+                ${response}
+            </div>
+        `;
+        messagesContainer.appendChild(botBubble);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 1000 + Math.random() * 1000); // 1-2 second delay
+};
+
+console.log('🤖 AI Trip Planner Loaded!');

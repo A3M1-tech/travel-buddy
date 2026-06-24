@@ -28,10 +28,11 @@
                 <i class="fas fa-plus-circle"></i>
                 <span>Create Trip</span>
             </a>
-            <a href="#" class="nav-item" data-page="squad">
-                <i class="fas fa-users"></i>
-                <span>My Squad</span>
-            </a>
+            <a href="#" class="nav-item ai-nav" data-page="ai-planner">
+    <i class="fas fa-robot"></i>
+    <span>AI Trip Planner</span>
+    <span class="new-tag">NEW</span>
+</a>
             <a href="#" class="nav-item" data-page="expenses">
                 <i class="fas fa-wallet"></i>
                 <span>Expenses</span>
@@ -589,47 +590,79 @@
     </div>
 </div>
 
-        <!-- SQUAD PAGE -->
-        <div class="page" id="page-squad">
-            <h1 class="page-title"><i class="fas fa-users"></i> My Squad</h1>
-            <div class="squad-grid">
-                <div class="squad-card">
-                    <div class="squad-avatar" style="background: linear-gradient(135deg, #6c63ff, #764ba2);">R</div>
-                    <h3>Rahul K.</h3>
-                    <p>Delhi University</p>
-                    <span class="squad-badge verified"><i class="fas fa-shield-alt"></i> Verified</span>
-                    <div class="squad-stats">
-                        <span>5 trips</span>
-                        <span>⭐ 4.9</span>
-                    </div>
-                    <button class="btn-message"><i class="fas fa-comment"></i> Message</button>
+        <!-- AI TRIP PLANNER PAGE -->
+<div class="page" id="page-ai-planner">
+    <div class="ai-header">
+        <h1 class="page-title">
+            <i class="fas fa-robot"></i> AI Trip Planner
+        </h1>
+        <p class="ai-subtitle">Your smart travel buddy! Ask me anything about trips, budgets, or destinations 🌍</p>
+    </div>
+    
+    <div class="ai-chat-container">
+        <div class="ai-messages" id="aiMessages">
+            <!-- Welcome Message -->
+            <div class="ai-message ai-bot">
+                <div class="ai-avatar-bot">
+                    <i class="fas fa-robot"></i>
                 </div>
-                <div class="squad-card">
-                    <div class="squad-avatar" style="background: linear-gradient(135deg, #ff6584, #ff4444);">P</div>
-                    <h3>Priya M.</h3>
-                    <p>Mumbai University</p>
-                    <span class="squad-badge verified"><i class="fas fa-shield-alt"></i> Verified</span>
-                    <div class="squad-stats">
-                        <span>3 trips</span>
-                        <span>⭐ 4.7</span>
-                    </div>
-                    <button class="btn-message"><i class="fas fa-comment"></i> Message</button>
-                </div>
-                <div class="squad-card">
-                    <div class="squad-avatar" style="background: linear-gradient(135deg, #4ecdc4, #44aa99);">A</div>
-                    <h3>Arjun S.</h3>
-                    <p>VIT Vellore</p>
-                    <span class="squad-badge verified"><i class="fas fa-shield-alt"></i> Verified</span>
-                    <div class="squad-stats">
-                        <span>7 trips</span>
-                        <span>⭐ 4.8</span>
-                    </div>
-                    <button class="btn-message"><i class="fas fa-comment"></i> Message</button>
+                <div class="ai-bubble">
+                    <p>👋 Hey traveller! I'm <strong>TravelBot</strong>, your AI trip planner!</p>
+                    <p style="margin-top: 10px;">I can help you with:</p>
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li>🎯 Trip suggestions based on budget</li>
+                        <li>📅 Best time to visit places</li>
+                        <li>💰 Budget breakdown</li>
+                        <li>📍 Destination recommendations</li>
+                        <li>🎒 What to pack</li>
+                        <li>💡 Travel tips & hacks</li>
+                    </ul>
+                    <p style="margin-top: 10px;">What would you like to know? 😊</p>
                 </div>
             </div>
         </div>
-
-    </main>
+        
+        <!-- Quick Suggestions -->
+        <div class="ai-suggestions" id="aiSuggestions">
+            <p class="suggestions-label">💡 Quick questions:</p>
+            <div class="suggestion-chips">
+                <button class="suggestion-chip" onclick="askAI('I have ₹5000 for 3 days, where should I go?')">
+                    💰 Budget trip ₹5000
+                </button>
+                <button class="suggestion-chip" onclick="askAI('Best beach destinations in India')">
+                    🏖️ Beach destinations
+                </button>
+                <button class="suggestion-chip" onclick="askAI('Adventure trips for college students')">
+                    🏔️ Adventure trips
+                </button>
+                <button class="suggestion-chip" onclick="askAI('What to pack for Manali in winter?')">
+                    🎒 Packing tips
+                </button>
+                <button class="suggestion-chip" onclick="askAI('Cheap weekend trips near Mumbai')">
+                    📍 Weekend trips
+                </button>
+                <button class="suggestion-chip" onclick="askAI('Solo travel safety tips')">
+                    🛡️ Safety tips
+                </button>
+            </div>
+        </div>
+        
+        <!-- Input -->
+        <div class="ai-input-container">
+            <input 
+                type="text" 
+                id="aiInput" 
+                class="ai-input" 
+                placeholder="Ask me about your dream trip..."
+                onkeypress="if(event.key==='Enter') sendAIMessage()"
+                maxlength="200"
+            >
+            <button class="ai-send-btn" onclick="sendAIMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -645,11 +678,10 @@
         <i class="fas fa-plus"></i>
     </a>
     
-    <!-- Squad (Default for users) -->
-    <a href="#" class="bottom-nav-item" data-page="squad" id="bottomSquad">
-        <i class="fas fa-users"></i>
-        <span>Squad</span>
-    </a>
+    <a href="#" class="bottom-nav-item" data-page="ai-planner" id="bottomSquad">
+    <i class="fas fa-robot"></i>
+    <span>AI Bot</span>
+</a>
     
     <!-- Admin Panel (Only for admins) -->
     <a href="admin.html" class="bottom-nav-item admin-bottom" id="bottomAdmin" style="display:none;">
