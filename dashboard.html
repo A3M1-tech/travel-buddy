@@ -201,6 +201,19 @@
     
     <div class="form-container">
         <form class="create-trip-form" id="createTripForm">
+            <!-- COVER IMAGE UPLOAD -->
+<div class="form-group">
+    <label><i class="fas fa-image"></i> Cover Image <span class="optional">(Optional)</span></label>
+    <div class="cover-image-upload" onclick="document.getElementById('tripCoverInput').click()">
+        <div id="coverImagePreview">
+            <i class="fas fa-camera"></i>
+            <p>Click to upload cover image</p>
+            <small>Or skip to use default gradient</small>
+        </div>
+    </div>
+    <input type="file" id="tripCoverInput" accept="image/*" style="display:none" onchange="previewCoverImage(event)">
+    <small class="form-hint">📸 Add a beautiful image of the destination (Max 1MB)</small>
+</div>
             <div class="form-group">
                 <label><i class="fas fa-flag"></i> Trip Name <span class="required">*</span></label>
                 <input type="text" id="tripName" placeholder="e.g., Goa Beach Vibes" required maxlength="50">

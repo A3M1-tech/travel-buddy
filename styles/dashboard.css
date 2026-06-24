@@ -3382,3 +3382,339 @@ body {
         flex-wrap: wrap;
     }
 }
+/* ============================
+   COVER IMAGE & MEMORIES
+   ============================ */
+
+.optional {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
+    margin-left: 5px;
+}
+
+.cover-image-upload {
+    width: 100%;
+    height: 200px;
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+
+.cover-image-upload:hover {
+    border-color: var(--accent-1);
+    background: rgba(108, 99, 255, 0.05);
+}
+
+#coverImagePreview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-secondary);
+    position: relative;
+}
+
+#coverImagePreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#coverImagePreview i {
+    font-size: 3rem;
+    color: var(--accent-1);
+    margin-bottom: 10px;
+    opacity: 0.6;
+}
+
+#coverImagePreview p {
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+#coverImagePreview small {
+    font-size: 0.8rem;
+}
+
+.cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cover-image-upload:hover .cover-overlay {
+    opacity: 1;
+}
+
+.cover-overlay i {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: white !important;
+    opacity: 1 !important;
+}
+
+/* Image overlay for explore cards */
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 100%);
+}
+
+/* Banner content positioning */
+.trip-details-banner .banner-content {
+    position: relative;
+    z-index: 2;
+}
+
+.trip-details-banner {
+    background-color: var(--bg-card);
+}
+
+/* Memory Upload Button */
+.btn-upload-memory {
+    margin-left: auto;
+    padding: 8px 16px;
+    background: var(--gradient-1);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-memory:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+}
+
+/* Memories Grid */
+.memories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.empty-memories {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-memories i {
+    font-size: 3rem;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    opacity: 0.6;
+}
+
+.empty-memories p {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.empty-memories small {
+    font-size: 0.85rem;
+}
+
+/* Memory Item */
+.memory-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease;
+}
+
+.memory-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.3);
+}
+
+.memory-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.memory-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.memory-item:hover .memory-overlay {
+    opacity: 1;
+}
+
+.memory-info p {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+}
+
+.memory-info small {
+    font-size: 0.65rem;
+    opacity: 0.8;
+}
+
+.btn-delete-memory {
+    background: rgba(255, 68, 68, 0.9);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.btn-delete-memory:hover {
+    background: #ff4444;
+    transform: scale(1.1);
+}
+
+/* Memory Modal (Fullscreen view) */
+.memory-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.memory-modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+    text-align: center;
+}
+
+.memory-modal-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 16px;
+    object-fit: contain;
+}
+
+.modal-close {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #ff4444;
+    transform: rotate(90deg);
+}
+
+.memory-modal-info {
+    margin-top: 15px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.memory-modal-info strong {
+    color: var(--accent-1);
+}
+
+@media (max-width: 768px) {
+    .memories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .cover-image-upload {
+        height: 150px;
+    }
+    
+    #coverImagePreview i {
+        font-size: 2rem;
+    }
+    
+    .btn-upload-memory {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .memory-overlay {
+        opacity: 1; /* Always visible on mobile */
+    }
+}

@@ -428,6 +428,10 @@ function setupCreateTripForm() {
         const maxMembers = parseInt(document.getElementById('tripMaxMembers').value);
         const description = document.getElementById('tripDescription').value.trim();
         const rules = document.getElementById('tripRules').value.trim();
+
+        // Get cover image
+        const coverImage = document.getElementById('coverImagePreview').dataset.imageData || null;
+
         
         // Get selected trip types
         const selectedTypes = [];
@@ -490,15 +494,16 @@ function setupCreateTripForm() {
         try {
             // Save trip to database
             const tripData = {
-                name: tripName,
-                destination: destination,
-                startDate: startDate,
-                endDate: endDate,
-                budget: budget,
-                maxMembers: maxMembers,
-                description: description,
-                rules: rules || 'No specific rules',
-                types: selectedTypes,
+    name: tripName,
+    destination: destination,
+    startDate: startDate,
+    endDate: endDate,
+    budget: budget,
+    maxMembers: maxMembers,
+    description: description,
+    rules: rules || 'No specific rules',
+    types: selectedTypes,
+    coverImage: coverImage, // NEW! Cover image
                 
                 // Creator info
                 createdBy: currentUser.uid,
@@ -545,10 +550,21 @@ function setupCreateTripForm() {
             );
             
             // Reset form
-            form.reset();
-            document.querySelectorAll('.type-tag.selected').forEach(tag => {
-                tag.classList.remove('selected');
-            });
+form.reset();
+document.querySelectorAll('.type-tag.selected').forEach(tag => {
+    tag.classList.remove('selected');
+});
+
+// Reset cover image
+const preview = document.getElementById('coverImagePreview');
+if (preview) {
+    preview.innerHTML = `
+        <i class="fas fa-camera"></i>
+        <p>Click to upload cover image</p>
+        <small>Or skip to use default gradient</small>
+    `;
+    delete preview.dataset.imageData;
+}
             
             setTimeout(() => {
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Approval';
@@ -565,6 +581,190 @@ function setupCreateTripForm() {
         }
     });
 }
+
+// ============================
+// COVER IMAGE PREVIEW
+// ============================
+window.previewCoverImage = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 1024 * 1024) {
+        alert('❌ Image size should be less than 1MB!\nPlease compress at tinypng.com');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('coverImagePreview');
+        preview.innerHTML = `
+            <img src="${e.target.result}" alt="Cover">
+            <div class="cover-overlay">
+                <i class="fas fa-edit"></i>
+                <span>Click to change</span>
+            </div>
+        `;
+        preview.dataset.imageData = e.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+// ============================
+// TRIP MEMORY PHOTOS SYSTEM
+// ============================
+
+async function loadTripMemories(tripId) {
+    const container = document.getElementById(`memoriesGrid-${tripId}`);
+    if (!container) return;
+    
+    try {
+        const { onSnapshot, query, orderBy, collection } = await import('./firebase-config.js');
+        
+        const memoriesRef = collection(db, "trips", tripId, "memories");
+        const memoriesQuery = query(memoriesRef, orderBy("uploadedAt", "desc"));
+        
+        onSnapshot(memoriesQuery, (snapshot) => {
+            const memories = [];
+            snapshot.forEach((doc) => {
+                memories.push({ id: doc.id, ...doc.data() });
+            });
+            
+            displayMemories(tripId, memories);
+        });
+        
+    } catch (error) {
+        console.error('Error loading memories:', error);
+    }
+}
+
+function displayMemories(tripId, memories) {
+    const container = document.getElementById(`memoriesGrid-${tripId}`);
+    if (!container) return;
+    
+    if (memories.length === 0) {
+        container.innerHTML = `
+            <div class="empty-memories">
+                <i class="fas fa-camera-retro"></i>
+                <p>No memories yet</p>
+                <small>Be the first to share a moment! 📸</small>
+            </div>
+        `;
+        return;
+    }
+    
+    // Check if current user is admin
+    const isAdmin = userData?.role === 'super_admin' || userData?.role === 'admin';
+    
+    container.innerHTML = memories.map(memory => createMemoryItem(memory, tripId, isAdmin)).join('');
+}
+
+function createMemoryItem(memory, tripId, isAdmin) {
+    const isMine = memory.uploadedBy === currentUser?.uid;
+    const canDelete = isMine || isAdmin;
+    
+    let dateStr = 'Just now';
+    if (memory.uploadedAt) {
+        try {
+            const date = memory.uploadedAt.toDate();
+            dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        } catch (e) {}
+    }
+    
+    return `
+        <div class="memory-item" onclick="viewMemoryFullscreen('${memory.imageData}', '${memory.uploaderName}', '${dateStr}')">
+            <img src="${memory.imageData}" alt="Memory" loading="lazy">
+            <div class="memory-overlay">
+                <div class="memory-info">
+                    <p>By <strong>${memory.uploaderName}</strong></p>
+                    <small>${dateStr}</small>
+                </div>
+                ${canDelete ? `
+                    <button class="btn-delete-memory" onclick="event.stopPropagation(); deleteMemory('${tripId}', '${memory.id}', ${isAdmin && !isMine})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+window.viewMemoryFullscreen = function(imageData, uploader, date) {
+    const modal = document.createElement('div');
+    modal.className = 'memory-modal';
+    modal.innerHTML = `
+        <div class="memory-modal-content">
+            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="${imageData}" alt="Memory">
+            <div class="memory-modal-info">
+                <p>📸 By <strong>${uploader}</strong> • ${date}</p>
+            </div>
+        </div>
+    `;
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.remove();
+    };
+    document.body.appendChild(modal);
+};
+
+window.uploadMemoryPhoto = function(tripId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 1024 * 1024) {
+            alert('❌ Image size should be less than 1MB!\nPlease compress at tinypng.com');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+            try {
+                const { collection, addDoc, serverTimestamp } = await import('./firebase-config.js');
+                
+                await addDoc(collection(db, "trips", tripId, "memories"), {
+                    imageData: event.target.result,
+                    uploadedBy: currentUser.uid,
+                    uploaderName: userData.fullName,
+                    uploadedAt: serverTimestamp()
+                });
+                
+                alert('✅ Memory uploaded! 📸');
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('❌ Failed to upload. Try smaller image!');
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+};
+
+window.deleteMemory = async function(tripId, memoryId, isAdminDelete) {
+    const confirmMsg = isAdminDelete 
+        ? '⚠️ ADMIN DELETE: Remove this photo from trip?\nThis action cannot be undone.'
+        : 'Delete this memory?';
+    
+    if (!confirm(confirmMsg)) return;
+    
+    try {
+        const { deleteDoc } = await import('./firebase-config.js');
+        await deleteDoc(doc(db, "trips", tripId, "memories", memoryId));
+        
+        if (isAdminDelete) {
+            alert('🛡️ Photo removed by admin.');
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('❌ Failed to delete.');
+    }
+};
+
+console.log('📸 Memory Photos System Loaded!');
 
 // ============================
 // LOAD APPROVED TRIPS FOR EXPLORE
@@ -691,14 +891,12 @@ function createExploreCard(trip) {
     
     return `
     <div class="explore-card" data-types="${(trip.types || []).join(',')}" onclick="openTripDetails('${trip.id}')" style="cursor:pointer;">
-        <div class="explore-banner" style="background: ${gradients[firstType] || gradients.adventure};">
-                <div class="explore-banner-icon">
-                    <i class="fas ${icons[firstType] || 'fa-suitcase-rolling'}"></i>
-                </div>
-                <span class="spots-left ${isFull ? 'full' : ''}">
-                    ${isFull ? 'Full' : `${spotsLeft} spots left`}
-                </span>
-            </div>
+        <div class="explore-banner" style="${trip.coverImage ? `background-image: url('${trip.coverImage}'); background-size: cover; background-position: center;` : `background: ${gradients[firstType] || gradients.adventure};`}">
+    ${!trip.coverImage ? `<div class="explore-banner-icon"><i class="fas ${icons[firstType] || 'fa-suitcase-rolling'}"></i></div>` : '<div class="image-overlay"></div>'}
+    <span class="spots-left ${isFull ? 'full' : ''}">
+        ${isFull ? 'Full' : `${spotsLeft} spots left`}
+    </span>
+</div>
             <div class="explore-info">
                 <h3>${trip.name}</h3>
                 <p class="explore-location"><i class="fas fa-map-marker-alt"></i> ${trip.destination}</p>
@@ -1308,14 +1506,16 @@ async function displayTripDetails(trip) {
     container.innerHTML = `
         <div class="trip-details-container">
             <!-- Banner -->
-            <div class="trip-details-banner" style="background: ${gradients[firstType]};">
-                <i class="fas ${icons[firstType]} trip-banner-icon-big"></i>
-                <span class="trip-status-tag">✅ Approved Trip</span>
-                <h1 class="trip-details-title">${trip.name}</h1>
-                <p class="trip-details-location">
-                    <i class="fas fa-map-marker-alt"></i> ${trip.destination}
-                </p>
-            </div>
+<div class="trip-details-banner" style="${trip.coverImage ? `background-image: url('${trip.coverImage}'); background-size: cover; background-position: center;` : `background: ${gradients[firstType]};`}">
+    ${!trip.coverImage ? `<i class="fas ${icons[firstType]} trip-banner-icon-big"></i>` : ''}
+    <div class="banner-content">
+        <span class="trip-status-tag">✅ Approved Trip</span>
+        <h1 class="trip-details-title">${trip.name}</h1>
+        <p class="trip-details-location">
+            <i class="fas fa-map-marker-alt"></i> ${trip.destination}
+        </p>
+    </div>
+</div>
             
             <!-- Body -->
             <div class="trip-details-body">
@@ -1410,17 +1610,34 @@ async function displayTripDetails(trip) {
                     </div>
                 </div>
                 
-                <!-- Photos Coming Soon -->
-                <div class="trip-section">
-                    <h3 class="trip-section-title">
-                        <i class="fas fa-images"></i> Trip Memories
-                    </h3>
-                    <div class="coming-soon-section">
-                        <i class="fas fa-camera"></i>
-                        <h3>Photos & Videos Coming Soon!</h3>
-                        <p>Members will be able to share trip memories here</p>
-                    </div>
-                </div>
+                <!-- Trip Memories -->
+${(isUserMember || isUserCreator) ? `
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-images"></i> Trip Memories
+        <button class="btn-upload-memory" onclick="uploadMemoryPhoto('${trip.id}')">
+            <i class="fas fa-plus"></i> Add Photo
+        </button>
+    </h3>
+    <div class="memories-grid" id="memoriesGrid-${trip.id}">
+        <div class="loading-state" style="padding: 20px;">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading memories...</p>
+        </div>
+    </div>
+</div>
+` : `
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-images"></i> Trip Memories
+    </h3>
+    <div class="coming-soon-section">
+        <i class="fas fa-lock"></i>
+        <h3>Members Only</h3>
+        <p>Join this trip to see memories!</p>
+    </div>
+</div>
+`}
                 <!-- SMART SPLIT / EXPENSES -->
 ${(isUserMember || isUserCreator) ? `
 <div class="trip-section">
@@ -1882,6 +2099,11 @@ window.openTripDetails = async function(tripId) {
         const expenseContainer = document.getElementById(`expensesList-${tripId}`);
         if (expenseContainer) {
             loadExpenses(tripId);
+        }
+        
+        const memoriesContainer = document.getElementById(`memoriesGrid-${tripId}`);
+        if (memoriesContainer) {
+            loadTripMemories(tripId);
         }
     }, 500);
 };
