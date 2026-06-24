@@ -712,5 +712,53 @@
 </nav>
 
     <script type="module" src="scripts/dashboard.js"></script>
+    <!-- EDIT DATES MODAL -->
+<div class="edit-dates-modal" id="editDatesModal">
+    <div class="edit-dates-content">
+        <button class="modal-close-btn" onclick="closeEditDatesModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h2>Edit Trip Dates</h2>
+            <p>Change your trip dates if needed</p>
+        </div>
+        
+        <div class="modal-body">
+            <div class="date-edit-field">
+                <label><i class="fas fa-calendar"></i> Start Date</label>
+                <input type="date" id="editStartDate">
+            </div>
+            
+            <div class="date-edit-field">
+                <label><i class="fas fa-calendar-check"></i> End Date</label>
+                <input type="date" id="editEndDate">
+            </div>
+            
+            <div class="date-edit-field">
+                <label><i class="fas fa-comment"></i> Reason (Optional)</label>
+                <input type="text" id="editDateReason" placeholder="e.g., Postponed due to exams" maxlength="100">
+                <small>Members will see this reason</small>
+            </div>
+            
+            <div class="date-warning">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>All trip members will be notified about this change!</p>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="closeEditDatesModal()">
+                Cancel
+            </button>
+            <button class="btn-modal-save" onclick="saveTripDates()">
+                <i class="fas fa-check"></i> Save Changes
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

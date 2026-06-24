@@ -1544,15 +1544,26 @@ async function displayTripDetails(trip) {
                 </div>
                 
                 <!-- Dates -->
-                <div class="trip-section">
-                    <h3 class="trip-section-title">
-                        <i class="fas fa-calendar-alt"></i> Trip Dates
-                    </h3>
-                    <div class="trip-description-box">
-                        <strong>From:</strong> ${startDate} <br>
-                        <strong>To:</strong> ${endDate}
-                    </div>
-                </div>
+<div class="trip-section">
+    <h3 class="trip-section-title">
+        <i class="fas fa-calendar-alt"></i> Trip Dates
+        ${isUserCreator ? `
+            <button class="btn-edit-dates" onclick="openEditDatesModal('${trip.id}', '${trip.startDate}', '${trip.endDate}')">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+        ` : ''}
+    </h3>
+    <div class="trip-description-box">
+        <strong>From:</strong> ${startDate} <br>
+        <strong>To:</strong> ${endDate}
+        ${trip.dateUpdatedAt ? `
+            <div class="date-updated-note">
+                <i class="fas fa-info-circle"></i>
+                Dates updated recently ${trip.dateUpdateReason ? `(${trip.dateUpdateReason})` : ''}
+            </div>
+        ` : ''}
+    </div>
+</div>
                 
                 <!-- Description -->
                 <div class="trip-section">
@@ -2955,3 +2966,104 @@ setInterval(() => {
 }, 20000);
 
 console.log('🔔 Notifications System Loaded!');
+
+// ============================
+// EDIT TRIP DATES
+// ============================
+
+let currentEditTripId = null;
+
+window.openEditDatesModal = function(tripId, currentStart, currentEnd) {
+    currentEditTripId = tripId;
+    
+    const modal = document.getElementById('editDatesModal');
+    const startInput = document.getElementById('editStartDate');
+    const endInput = document.getElementById('editEndDate');
+    const reasonInput = document.getElementById('editDateReason');
+    
+    // Set current values
+    startInput.value = currentStart;
+    endInput.value = currentEnd;
+    reasonInput.value = '';
+    
+    // Set minimum date as today
+    const today = new Date().toISOString().split('T')[0];
+    startInput.min = today;
+    
+    modal.classList.add('active');
+};
+
+window.closeEditDatesModal = function() {
+    const modal = document.getElementById('editDatesModal');
+    modal.classList.remove('active');
+    currentEditTripId = null;
+};
+
+window.saveTripDates = async function() {
+    if (!currentEditTripId) return;
+    
+    const newStartDate = document.getElementById('editStartDate').value;
+    const newEndDate = document.getElementById('editEndDate').value;
+    const reason = document.getElementById('editDateReason').value.trim();
+    
+    // Validations
+    if (!newStartDate || !newEndDate) {
+        alert('❌ Please select both dates!');
+        return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(newStartDate);
+    const end = new Date(newEndDate);
+    
+    if (start < today) {
+        alert('❌ Start date cannot be in the past!');
+        return;
+    }
+    
+    if (end <= start) {
+        alert('❌ End date must be after start date!');
+        return;
+    }
+    
+    try {
+        const tripRef = doc(db, "trips", currentEditTripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        // Store old dates for history
+        const dateHistory = tripData.dateHistory || [];
+        dateHistory.push({
+            oldStart: tripData.startDate,
+            oldEnd: tripData.endDate,
+            newStart: newStartDate,
+            newEnd: newEndDate,
+            reason: reason || 'No reason provided',
+            changedAt: new Date().toISOString(),
+            changedBy: userData.fullName
+        });
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            startDate: newStartDate,
+            endDate: newEndDate,
+            dateUpdatedAt: new Date().toISOString(),
+            dateUpdateReason: reason,
+            dateHistory: dateHistory
+        }, { merge: true });
+        
+        alert(`✅ Trip dates updated successfully!\n\nAll members will be notified.`);
+        
+        closeEditDatesModal();
+        
+        // Refresh trip details
+        openTripDetails(currentEditTripId);
+        
+    } catch (error) {
+        console.error('Edit dates error:', error);
+        alert('❌ Failed to update dates. Try again!');
+    }
+};
+
+console.log('📅 Edit Trip Dates System Loaded!');

@@ -4305,3 +4305,285 @@ body {
         font-size: 0.95rem;
     }
 }
+/* ============================
+   EDIT DATES MODAL
+   ============================ */
+
+.btn-edit-dates {
+    margin-left: auto;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--accent-1);
+    color: var(--accent-1);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-edit-dates:hover {
+    background: var(--accent-1);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.date-updated-note {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    color: #ffd700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* MODAL */
+.edit-dates-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.edit-dates-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.edit-dates-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.edit-dates-modal.active .edit-dates-content {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.modal-close-btn:hover {
+    background: #ff4444;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-header {
+    padding: 30px 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--gradient-1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    margin: 0 auto 15px;
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.3);
+}
+
+.modal-header h2 {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.modal-body {
+    padding: 25px 30px;
+}
+
+.date-edit-field {
+    margin-bottom: 20px;
+}
+
+.date-edit-field label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.date-edit-field label i {
+    color: var(--accent-1);
+}
+
+.date-edit-field input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.date-edit-field input:focus {
+    border-color: var(--accent-1);
+    box-shadow: 0 0 15px rgba(108, 99, 255, 0.2);
+}
+
+.date-edit-field small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.date-warning {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.date-warning i {
+    color: #ffd700;
+    font-size: 1.1rem;
+    margin-top: 2px;
+}
+
+.date-warning p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.modal-actions {
+    padding: 20px 30px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+}
+
+.btn-modal-cancel {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-modal-cancel:hover {
+    background: var(--bg-primary);
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.btn-modal-save {
+    flex: 2;
+    padding: 12px;
+    background: var(--gradient-1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-modal-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .edit-dates-content {
+        margin: 10px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-actions {
+        padding: 20px;
+    }
+    
+    .modal-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+}
