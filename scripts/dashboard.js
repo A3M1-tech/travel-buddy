@@ -3265,3 +3265,138 @@ function updateNotifBadge() {
 }
 
 console.log('🔔 Notification Helpers Loaded!');
+
+// ============================
+// NOTIFICATION HELPER FUNCTIONS (COMPLETE FIX)
+// ============================
+
+// Close notification dropdown and open trip
+window.closeNotifAndOpenTrip = function(tripId) {
+    const dropdown = document.getElementById('notificationsDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('active');
+    }
+    
+    // Open trip details
+    setTimeout(() => {
+        if (typeof openTripDetails === 'function') {
+            openTripDetails(tripId);
+        } else {
+            console.error('openTripDetails not found');
+        }
+    }, 200);
+};
+
+// Close notification dropdown and go to explore
+window.closeNotifAndGoExplore = function() {
+    const dropdown = document.getElementById('notificationsDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('active');
+    }
+    
+    setTimeout(() => {
+        if (typeof showPage === 'function') {
+            showPage('explore');
+        }
+    }, 200);
+};
+
+// Accept join request from notification
+window.acceptJoinRequestNotif = async function(tripId, userId) {
+    if (!confirm('Accept this user to join your trip?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const currentMembers = tripData.members || [];
+        
+        if (currentMembers.length >= tripData.maxMembers) {
+            alert('❌ Trip is full!');
+            return;
+        }
+        
+        // Add user to members
+        const updatedMembers = [...currentMembers, userId];
+        
+        // Remove from join requests
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            members: updatedMembers,
+            memberCount: updatedMembers.length,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        // Update accepted user's trips count
+        try {
+            const userRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userInfo = userSnap.data();
+                await setDoc(userRef, {
+                    ...userInfo,
+                    tripsJoined: (userInfo.tripsJoined || 0) + 1
+                }, { merge: true });
+            }
+        } catch (e) {
+            console.error('Error updating user count:', e);
+        }
+        
+        alert('✅ User accepted! They are now part of your trip.');
+        
+        // Close notification dropdown
+        const dropdown = document.getElementById('notificationsDropdown');
+        if (dropdown) {
+            dropdown.classList.remove('active');
+        }
+        
+        // Reload notifications
+        if (typeof loadAllNotifications === 'function') {
+            loadAllNotifications();
+        }
+        
+    } catch (error) {
+        console.error('Accept error:', error);
+        alert('❌ Failed to accept. Try again!');
+    }
+};
+
+// Reject join request from notification
+window.rejectJoinRequestNotif = async function(tripId, userId) {
+    if (!confirm('Reject this join request?')) return;
+    
+    try {
+        const tripRef = doc(db, "trips", tripId);
+        const tripSnap = await getDoc(tripRef);
+        const tripData = tripSnap.data();
+        
+        const updatedRequests = (tripData.joinRequests || []).filter(req => req.userId !== userId);
+        
+        await setDoc(tripRef, {
+            ...tripData,
+            joinRequests: updatedRequests
+        }, { merge: true });
+        
+        alert('Request declined.');
+        
+        // Close dropdown
+        const dropdown = document.getElementById('notificationsDropdown');
+        if (dropdown) {
+            dropdown.classList.remove('active');
+        }
+        
+        // Reload notifications
+        if (typeof loadAllNotifications === 'function') {
+            loadAllNotifications();
+        }
+        
+    } catch (error) {
+        console.error('Reject error:', error);
+        alert('Failed to reject.');
+    }
+};
+
+console.log('🔔 Notification Actions Fixed!');
