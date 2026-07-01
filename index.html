@@ -101,20 +101,20 @@
                     <i class="fas fa-play-circle"></i> See How It Works
                 </a>
             </div>
-            <div class="hero-stats">
+        <div class="hero-stats">
     <div class="stat">
-        <span class="stat-number" data-target="5">0</span>+
+        <span class="stat-number" id="statUsers" data-target="0">0</span>+
         <span class="stat-label">Students Joined</span>
     </div>
     <div class="stat">
-        <span class="stat-number" data-target="1">0</span>+
-        <span class="stat-label">Trip Planned</span>
+        <span class="stat-number" id="statTrips" data-target="0">0</span>+
+        <span class="stat-label">Trips Planned</span>
     </div>
     <div class="stat">
-        <span class="stat-number" data-target="1">0</span>+
-        <span class="stat-label">College</span>
+        <span class="stat-number" id="statColleges" data-target="0">0</span>+
+        <span class="stat-label">Colleges</span>
     </div>
-</div>
+</div>   
             <div class="hero-explore">
                 <p>Explore More 👇</p>
                 <div class="quick-nav">
@@ -125,7 +125,70 @@
             </div>
         </div>
     </section>
-
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzYEBOq7gdGvYaH4Kcp4ASbn_Yc1VTKc8",
+        authDomain: "travel-buddy-b7486.firebaseapp.com",
+        projectId: "travel-buddy-b7486",
+        storageBucket: "travel-buddy-b7486.firebasestorage.app",
+        messagingSenderId: "924865184814",
+        appId: "1:924865184814:web:e9e46b1a7a388e39300bbf"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    async function loadRealStats() {
+        try {
+            // Load users
+            const usersSnapshot = await getDocs(collection(db, "users"));
+            const totalUsers = usersSnapshot.size;
+            
+            // Load approved trips
+            const tripsSnapshot = await getDocs(collection(db, "trips"));
+            let approvedTrips = 0;
+            const colleges = new Set();
+            
+            usersSnapshot.forEach((doc) => {
+                const user = doc.data();
+                if (user.college) {
+                    colleges.add(user.college.toLowerCase().trim());
+                }
+            });
+            
+            tripsSnapshot.forEach((doc) => {
+                const trip = doc.data();
+                if (trip.status === 'approved') {
+                    approvedTrips++;
+                }
+            });
+            
+            // Update the stats data-target
+            const statUsers = document.getElementById('statUsers');
+            const statTrips = document.getElementById('statTrips');
+            const statColleges = document.getElementById('statColleges');
+            
+            if (statUsers) statUsers.setAttribute('data-target', totalUsers);
+            if (statTrips) statTrips.setAttribute('data-target', approvedTrips);
+            if (statColleges) statColleges.setAttribute('data-target', colleges.size);
+            
+            console.log('📊 Real Stats:', {
+                users: totalUsers,
+                trips: approvedTrips,
+                colleges: colleges.size
+            });
+            
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+    
+    // Load stats before landing.js counter animation runs
+    loadRealStats();
+</script>
     <script src="scripts/landing.js"></script>
 </body>
 </html>
