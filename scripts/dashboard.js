@@ -3521,3 +3521,36 @@ window.showPage = function(pageName) {
 };
 
 console.log('🎁 Invite System Loaded!');
+// ============================
+// FIX: Auto-load invite when page opens
+// ============================
+
+// Override showPage to load invite data
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        // When invite link is clicked, load data
+        const inviteLinks = document.querySelectorAll('[data-page="invite"]');
+        inviteLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                console.log('Invite page clicked - loading data...');
+                setTimeout(() => {
+                    if (typeof loadInviteData === 'function') {
+                        loadInviteData();
+                    }
+                }, 500);
+            });
+        });
+    }, 2000);
+});
+
+// Also try loading immediately if already on invite page
+setTimeout(() => {
+    const invitePage = document.getElementById('page-invite');
+    if (invitePage && invitePage.classList.contains('active')) {
+        if (typeof loadInviteData === 'function') {
+            loadInviteData();
+        }
+    }
+}, 3000);
+
+console.log('🔗 Invite auto-loader ready!');
