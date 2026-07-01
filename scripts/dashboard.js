@@ -3400,3 +3400,124 @@ window.rejectJoinRequestNotif = async function(tripId, userId) {
 };
 
 console.log('🔔 Notification Actions Fixed!');
+// ============================
+// INVITE SYSTEM
+// ============================
+
+function generateInviteCode(userName) {
+    const namePrefix = (userName || 'user').replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 5);
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TB-${namePrefix}-${random}`;
+}
+
+async function loadInviteData() {
+    if (!currentUser || !userData) return;
+    
+    try {
+        // Generate or get user's invite code
+        let userInviteCode = userData.myInviteCode;
+        
+        if (!userInviteCode) {
+            userInviteCode = generateInviteCode(userData.fullName);
+            
+            // Save to user document
+            await setDoc(doc(db, "users", currentUser.uid), {
+                ...userData,
+                myInviteCode: userInviteCode
+            }, { merge: true });
+            
+            userData.myInviteCode = userInviteCode;
+        }
+        
+        // Display code
+        const codeEl = document.getElementById('userInviteCode');
+        const linkEl = document.getElementById('inviteLink');
+        
+        if (codeEl) codeEl.textContent = userInviteCode;
+        if (linkEl) linkEl.value = `https://travel-buddy-seven-zeta.vercel.app/login.html?code=${userInviteCode}`;
+        
+        // Count invites
+        await loadInviteStats(userInviteCode);
+        
+    } catch (error) {
+        console.error('Error loading invite data:', error);
+    }
+}
+
+async function loadInviteStats(myCode) {
+    try {
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        let joined = 0;
+        
+        usersSnapshot.forEach((doc) => {
+            const user = doc.data();
+            if (user.inviteCode === myCode && user.uid !== currentUser.uid) {
+                joined++;
+            }
+        });
+        
+        const invitesJoinedEl = document.getElementById('invitesJoined');
+        const invitesSentEl = document.getElementById('invitesSent');
+        
+        if (invitesJoinedEl) invitesJoinedEl.textContent = joined;
+        if (invitesSentEl) invitesSentEl.textContent = joined; // Same for now
+        
+    } catch (error) {
+        console.error('Error loading invite stats:', error);
+    }
+}
+
+window.copyInviteCode = function() {
+    const code = document.getElementById('userInviteCode').textContent;
+    navigator.clipboard.writeText(code);
+    
+    const btn = document.getElementById('copyCodeBtn');
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-copy"></i>';
+    }, 2000);
+    
+    alert(`✅ Code copied!\n\n${code}`);
+};
+
+window.copyInviteLink = function() {
+    const link = document.getElementById('inviteLink').value;
+    navigator.clipboard.writeText(link);
+    
+    const btn = document.getElementById('copyBtn');
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+    }, 2000);
+};
+
+window.shareOnWhatsApp = function() {
+    const link = document.getElementById('inviteLink').value;
+    const code = document.getElementById('userInviteCode').textContent;
+    const message = `Hey! 👋\n\nJoin me on *TravelBuddy* - the coolest app for college students to find travel buddies! 🎒✈️\n\n🎯 Use my invite code: *${code}*\n\n👉 Sign up here: ${link}\n\nSee you inside! 🚀`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+};
+
+window.shareOnInstagram = function() {
+    const link = document.getElementById('inviteLink').value;
+    navigator.clipboard.writeText(link);
+    alert('📸 Link copied!\n\nOpen Instagram and paste it in your story or DM!');
+};
+
+window.shareOnTelegram = function() {
+    const link = document.getElementById('inviteLink').value;
+    const code = document.getElementById('userInviteCode').textContent;
+    const message = `Join me on TravelBuddy! 🎒\n\nUse code: ${code}\n${link}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`, '_blank');
+};
+
+// Load invite data when invite page opens
+const oldShowPageInvite = window.showPage;
+window.showPage = function(pageName) {
+    oldShowPageInvite(pageName);
+    if (pageName === 'invite') {
+        setTimeout(() => loadInviteData(), 300);
+    }
+};
+
+console.log('🎁 Invite System Loaded!');

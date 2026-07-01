@@ -314,49 +314,88 @@
 </div>
 
         <!-- INVITE FRIENDS PAGE -->
-        <div class="page" id="page-invite">
-            <h1 class="page-title"><i class="fas fa-envelope"></i> Invite Friends</h1>
-            <div class="invite-container">
-                <div class="invite-card">
-                    <div class="invite-icon">
-                        <i class="fas fa-link"></i>
-                    </div>
-                    <h3>Share Invite Link</h3>
-                    <p>Copy your unique invite link and share it with friends</p>
-                    <div class="invite-link-box">
-                        <input type="text" value="https://travelbuddy.app/invite/abc123xyz" readonly id="inviteLink">
-                        <button onclick="copyInviteLink()" id="copyBtn">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
+<div class="page" id="page-invite">
+    <h1 class="page-title"><i class="fas fa-envelope"></i> Invite Friends</h1>
+    
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <i class="fas fa-gift"></i>
+        <div>
+            <strong>Invite your friends!</strong>
+            <p>Share TravelBuddy with your college friends and build the ultimate travel squad!</p>
+        </div>
+    </div>
+    
+    <div class="invite-container">
+        <!-- YOUR UNIQUE INVITE CODE -->
+        <div class="invite-card highlight-card">
+            <div class="invite-icon" style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3>Your Unique Invite Code</h3>
+            <p>Share this code with friends when they sign up</p>
+            <div class="invite-code-display" id="myInviteCode">
+                <span id="userInviteCode">Loading...</span>
+                <button onclick="copyInviteCode()" id="copyCodeBtn">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- SHARE LINK -->
+        <div class="invite-card">
+            <div class="invite-icon">
+                <i class="fas fa-link"></i>
+            </div>
+            <h3>Share Signup Link</h3>
+            <p>Send this link - code auto-fills for your friend!</p>
+            <div class="invite-link-box">
+                <input type="text" readonly id="inviteLink" value="Loading...">
+                <button onclick="copyInviteLink()" id="copyBtn">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+        
+        <!-- SHARE ON SOCIAL -->
+        <div class="invite-card">
+            <div class="invite-icon">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <h3>Share on Social Media</h3>
+            <p>Quick share to your friends</p>
+            <div class="social-share-buttons">
+                <button class="share-btn whatsapp" onclick="shareOnWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="share-btn instagram" onclick="shareOnInstagram()">
+                    <i class="fab fa-instagram"></i> Instagram
+                </button>
+                <button class="share-btn telegram" onclick="shareOnTelegram()">
+                    <i class="fab fa-telegram"></i> Telegram
+                </button>
+            </div>
+        </div>
+        
+        <!-- INVITE STATS -->
+        <div class="invite-card stats-card">
+            <div class="invite-icon" style="background: linear-gradient(135deg, #4ecdc4, #44aa99);">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Your Invites</h3>
+            <div class="invite-stats">
+                <div class="invite-stat">
+                    <h4 id="invitesSent">0</h4>
+                    <p>Invited</p>
                 </div>
-                <div class="invite-card">
-                    <div class="invite-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <h3>Send Email Invite</h3>
-                    <p>Enter your friend's email to send them an invite</p>
-                    <form class="email-invite-form" id="emailInviteForm">
-                        <input type="email" placeholder="friend@email.com" required>
-                        <button type="submit">
-                            <i class="fas fa-paper-plane"></i> Send Invite
-                        </button>
-                    </form>
-                </div>
-                <div class="invite-card">
-                    <div class="invite-icon">
-                        <i class="fas fa-share-alt"></i>
-                    </div>
-                    <h3>Share on Social</h3>
-                    <p>Invite friends through social media</p>
-                    <div class="social-share-buttons">
-                        <button class="share-btn whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                        <button class="share-btn instagram"><i class="fab fa-instagram"></i> Instagram</button>
-                        <button class="share-btn telegram"><i class="fab fa-telegram"></i> Telegram</button>
-                    </div>
+                <div class="invite-stat">
+                    <h4 id="invitesJoined">0</h4>
+                    <p>Joined</p>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- EXPENSES PAGE -->
         <div class="page" id="page-expenses">

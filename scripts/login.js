@@ -14,6 +14,48 @@ import {
     serverTimestamp
 } from './firebase-config.js';
 
+// Auto-fill invite code from URL
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteCode = urlParams.get('code');
+    
+    if (inviteCode) {
+        // Show signup form
+        setTimeout(() => {
+            showSignup();
+            
+            // Wait for form to render
+            setTimeout(() => {
+                const inviteInput = document.querySelector('#signupForm input[placeholder*="Invite"]');
+                if (inviteInput) {
+                    inviteInput.value = inviteCode;
+                    inviteInput.style.background = 'rgba(0, 204, 68, 0.1)';
+                    inviteInput.style.borderColor = '#00cc44';
+                }
+                
+                // Show welcome message
+                const signupCard = document.getElementById('signupCard');
+                if (signupCard && !document.getElementById('inviteWelcome')) {
+                    const welcome = document.createElement('div');
+                    welcome.id = 'inviteWelcome';
+                    welcome.style.cssText = `
+                        background: linear-gradient(135deg, rgba(0, 204, 68, 0.1), rgba(0, 170, 51, 0.1));
+                        border: 1px solid rgba(0, 204, 68, 0.3);
+                        color: #00cc44;
+                        padding: 12px 16px;
+                        border-radius: 12px;
+                        margin-bottom: 15px;
+                        font-size: 0.85rem;
+                        text-align: center;
+                    `;
+                    welcome.innerHTML = `🎉 You've been invited! Code auto-filled below 👇`;
+                    signupCard.insertBefore(welcome, signupCard.querySelector('form'));
+                }
+            }, 500);
+        }, 500);
+    }
+});
+
 // PARTICLES
 function createParticles() {
     const container = document.getElementById('particles');

@@ -4775,3 +4775,81 @@ body {
 .compass-logo.large .compass-w {
     font-size: 0.7rem;
 }
+/* ============================
+   INVITE SYSTEM STYLES
+   ============================ */
+
+.highlight-card {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 140, 0, 0.05)) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+}
+
+.invite-code-display {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--bg-primary);
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-top: 15px;
+    border: 2px dashed #ffd700;
+}
+
+.invite-code-display span {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffd700;
+    letter-spacing: 2px;
+    font-family: monospace;
+}
+
+.invite-code-display button {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.invite-code-display button:hover {
+    transform: scale(1.1);
+}
+
+.stats-card {
+    text-align: center;
+}
+
+.invite-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.invite-stat {
+    background: var(--bg-primary);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.invite-stat h4 {
+    font-size: 2rem;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.invite-stat p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
