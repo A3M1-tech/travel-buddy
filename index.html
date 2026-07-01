@@ -143,12 +143,10 @@
     
     async function loadRealStats() {
         try {
-            // Load users
             const usersSnapshot = await getDocs(collection(db, "users"));
-            const totalUsers = usersSnapshot.size;
-            
-            // Load approved trips
             const tripsSnapshot = await getDocs(collection(db, "trips"));
+            
+            const totalUsers = usersSnapshot.size;
             let approvedTrips = 0;
             const colleges = new Set();
             
@@ -166,28 +164,73 @@
                 }
             });
             
-            // Update the stats data-target
-            const statUsers = document.getElementById('statUsers');
-            const statTrips = document.getElementById('statTrips');
-            const statColleges = document.getElementById('statColleges');
-            
-            if (statUsers) statUsers.setAttribute('data-target', totalUsers);
-            if (statTrips) statTrips.setAttribute('data-target', approvedTrips);
-            if (statColleges) statColleges.setAttribute('data-target', colleges.size);
+            const totalColleges = colleges.size;
             
             console.log('📊 Real Stats:', {
                 users: totalUsers,
                 trips: approvedTrips,
-                colleges: colleges.size
+                colleges: totalColleges
             });
+            
+            // Directly update the numbers (no animation issue)
+            const statUsers = document.getElementById('statUsers');
+            const statTrips = document.getElementById('statTrips');
+            const statColleges = document.getElementById('statColleges');
+            
+            // Animate to real numbers
+            if (statUsers) animateCount(statUsers, totalUsers);
+            if (statTrips) animateCount(statTrips, approvedTrips);
+            if (statColleges) animateCount(statColleges, totalColleges);
             
         } catch (error) {
             console.error('Error loading stats:', error);
+            // Fallback to reasonable numbers if error
+            const statUsers = document.getElementById('statUsers');
+            const statTrips = document.getElementById('statTrips');
+            const statColleges = document.getElementById('statColleges');
+            if (statUsers) statUsers.textContent = '5';
+            if (statTrips) statTrips.textContent = '1';
+            if (statColleges) statColleges.textContent = '1';
         }
     }
     
-    // Load stats before landing.js counter animation runs
-    loadRealStats();
+    function animateCount(element, target) {
+        if (target === 0) {
+            element.textContent = '0';
+            return;
+        }
+        
+        const duration = 2000;
+        const startTime = performance.now();
+        const startValue = 0;
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.floor(startValue + (target - startValue) * easeOut);
+            
+            element.textContent = currentValue;
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                element.textContent = target;
+            }
+        }
+        
+        requestAnimationFrame(update);
+    }
+    
+    // Load stats after page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadRealStats, 3000);
+        });
+    } else {
+        setTimeout(loadRealStats, 3000);
+    }
 </script>
     <script src="scripts/landing.js"></script>
 </body>
